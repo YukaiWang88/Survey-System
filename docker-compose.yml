@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  client:
+    build: ./client
+    ports:
+      - "3000:80"
+    depends_on:
+      - server
+
+  server:
+    build: ./server
+    ports:
+      - "3001:3001"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/survey-system
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:5
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:
