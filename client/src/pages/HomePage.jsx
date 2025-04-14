@@ -222,7 +222,7 @@ const HomePage = () => {
       <footer className="home-footer">
         <div className="footer-content">
           <div className="footer-brand">
-            <h3>Survey System</h3>
+            <h3>Quizlet</h3> 
             <p>Interactive presentations made easy</p>
           </div>
           
@@ -257,7 +257,7 @@ const HomePage = () => {
         </div>
         
         <div className="footer-bottom">
-          <p>© {new Date().getFullYear()} Survey System. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Quizlet. All rights reserved.</p>
         </div>
       </footer>
     </div>
