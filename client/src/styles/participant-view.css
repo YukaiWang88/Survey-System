@@ -1,0 +1,241 @@
+.participant-container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    padding: 20px;
+  }
+  
+  .question-container {
+    width: 100%;
+    max-width: 600px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    padding: 32px;
+  }
+  
+  .question-container h2 {
+    margin-top: 0;
+    margin-bottom: 24px;
+    font-size: 24px;
+    text-align: center;
+  }
+  
+  .options-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  
+  .option {
+    padding: 16px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 2px solid #f8f9fa;
+  }
+  
+  .option:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .option.selected {
+    background-color: #e3f2fd;
+    border-color: var(--primary-color);
+  }
+  
+  .multi-select .option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .multi-select .option input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+  }
+  
+  textarea {
+    width: 100%;
+    padding: 16px;
+    border: 2px solid #f0f0f0;
+    border-radius: 8px;
+    font-size: 16px;
+    resize: vertical;
+    min-height: 120px;
+    margin-bottom: 24px;
+  }
+  
+  .scale-container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  
+  .scale-option {
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: #f8f9fa;
+    font-size: 24px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .scale-option:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .scale-option.selected {
+    background-color: var(--primary-color);
+    color: white;
+  }
+  
+  .word-cloud-input {
+    margin-bottom: 24px;
+  }
+  
+  .word-cloud-input input {
+    width: 100%;
+    padding: 16px;
+    border: 2px solid #f0f0f0;
+    border-radius: 8px;
+    font-size: 18px;
+    text-align: center;
+  }
+  
+  .submit-button {
+    width: 100%;
+    padding: 16px;
+    font-size: 18px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .submit-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+  }
+  
+  .submit-button:not(:disabled):hover {
+    background-color: #3a80d2;
+  }
+  
+  .waiting-container, .submitted-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    padding: 20px;
+  }
+  
+  .waiting-container h2, .submitted-container h2 {
+    margin-bottom: 24px;
+    color: #333;
+  }
+  
+  .pulse-animation {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: rgba(74, 144, 226, 0.6);
+    margin: 24px 0;
+    animation: pulse 2s infinite;
+  }
+  
+  @keyframes pulse {
+    0% {
+      transform: scale(0.9);
+      opacity: 0.7;
+    }
+    50% {
+      transform: scale(1.1);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(0.9);
+      opacity: 0.7;
+    }
+  }
+  
+  .checkmark-animation {
+    font-size: 64px;
+    color: var(--success-color);
+    margin: 24px 0;
+    animation: scale-in 0.5s ease-out;
+  }
+  
+  @keyframes scale-in {
+    0% {
+      transform: scale(0);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  
+  .survey-info {
+    margin-top: 24px;
+    font-size: 16px;
+    color: #666;
+  }
+  
+  .join-view {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    padding: 20px;
+  }
+  
+  .join-view form, .nickname-confirm {
+    width: 100%;
+    max-width: 400px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    padding: 32px;
+  }
+  
+  .join-view h1 {
+    margin-bottom: 24px;
+    text-align: center;
+    color: #333;
+  }
+  
+  .nickname-confirm {
+    text-align: center;
+  }
+  
+  .nickname-confirm p {
+    margin-bottom: 24px;
+    font-size: 18px;
+  }
+  
+  .button-group {
+    display: flex;
+    gap: 12px;
+  }
+  
+  .button-group button {
+    flex: 1;
+  }

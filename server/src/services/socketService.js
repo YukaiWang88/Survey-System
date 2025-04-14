@@ -1,17 +1,8 @@
-// filepath: ./server/src/services/socketService.js
+const Response = require('../models/Response');
 
 /**
  * Socket.IO service for real-time survey functionality
  * Handles connections, room management, and real-time updates
- */
-
-// Importing models - these would be created in models directory
-// const Survey = require('../models/Survey');
-// const Response = require('../models/Response');
-
-/**
- * Sets up Socket.IO event handlers
- * @param {Object} io - Socket.IO server instance
  */
 const setupSockets = (io) => {
   // Track active presenters and participants
@@ -39,12 +30,29 @@ const setupSockets = (io) => {
         const participantCount = getParticipantCount(surveyId);
         socket.emit('participantCount', { count: participantCount });
         
-        // You could load and send existing responses here
-        // const responses = await Response.find({ surveyId });
-        // socket.emit('existingResponses', responses);
+        // Load existing responses
+        try {
+          const responses = await Response.find({ surveyId });
+          if (responses.length > 0) {
+            // Group responses by question
+            const questionResponses = {};
+            
+            responses.forEach(response => {
+              if (!questionResponses[response.questionId]) {
+                questionResponses[response.questionId] = [];
+              }
+              
+              questionResponses[response.questionId].push(response.response);
+            });
+            
+            socket.emit('existingResponses', questionResponses);
+          }
+        } catch (err) {
+          console.error('Error loading responses:', err);
+        }
       } catch (error) {
         console.error('Error in presenterJoin:', error);
-        socket.emit('error', { message: 'Failed to join as presenter' });
+        socket.emit('error', { message: 'Error joining survey' });
       }
     });
     
@@ -67,10 +75,13 @@ const setupSockets = (io) => {
         console.log(`Participant ${nickname} joined survey ${surveyId}`);
         
         // Notify presenter about new participant
+        const participantCount = getParticipantCount(surveyId);
         io.to(`presenter:${surveyId}`).emit('participantJoined', { 
           nickname,
-          count: getParticipantCount(surveyId)
+          count: participantCount
         });
+        
+        socket.emit('joinSuccess', { surveyId, nickname });
       } catch (error) {
         console.error('Error in participantJoin:', error);
         socket.emit('error', { message: 'Failed to join survey' });
@@ -87,31 +98,32 @@ const setupSockets = (io) => {
           return socket.emit('error', { message: 'Not authorized to submit to this survey' });
         }
         
-        // Add participant info to response
-        const responseData = {
+        // Save response to database
+        const newResponse = new Response({
           surveyId,
           questionId,
           response,
           participant: {
             nickname: participant.nickname
-          },
-          timestamp: new Date()
-        };
-        
-        // Save response to database (in a real implementation)
-        // const savedResponse = await new Response(responseData).save();
-        
-        // Emit to presenters in real-time
-        io.to(`presenter:${surveyId}`).emit('newResponse', responseData);
-        
-        // Emit to all participants for shared results views
-        io.to(`participant:${surveyId}`).emit('responseUpdate', {
-          questionId,
-          // Send anonymized aggregate data
-          aggregateData: calculateAggregateData(surveyId, questionId)
+          }
         });
         
-        console.log(`Response submitted to survey ${surveyId}, question ${questionId}`);
+        await newResponse.save();
+        
+        // Emit to presenters in real-time
+        io.to(`presenter:${surveyId}`).emit('newResponse', {
+          questionId,
+          response,
+          participant: participant.nickname,
+        });
+        
+        // Confirm to participant
+        socket.emit('responseSubmitted', { questionId });
+        
+        // Update aggregate results for everyone
+        updateAggregateResults(io, surveyId, questionId);
+        
+        console.log(`Response submitted to survey ${surveyId}, question ${questionId} by ${participant.nickname}`);
       } catch (error) {
         console.error('Error in submitResponse:', error);
         socket.emit('error', { message: 'Failed to submit response' });
@@ -128,7 +140,6 @@ const setupSockets = (io) => {
           return socket.emit('error', { message: 'Not authorized to control this survey' });
         }
         
-        // Actions: 'start', 'next', 'previous', 'end', etc.
         switch (action) {
           case 'start':
             io.to(`survey:${surveyId}`).emit('surveyStarted', { surveyId });
@@ -136,8 +147,14 @@ const setupSockets = (io) => {
           case 'next':
             io.to(`survey:${surveyId}`).emit('showQuestion', { questionId });
             break;
+          case 'previous':
+            io.to(`survey:${surveyId}`).emit('showQuestion', { questionId });
+            break;
           case 'end':
             io.to(`survey:${surveyId}`).emit('surveyEnded', { surveyId });
+            break;
+          case 'reveal':
+            io.to(`survey:${surveyId}`).emit('resultsRevealed', { questionId });
             break;
           default:
             io.to(`survey:${surveyId}`).emit('surveyControl', { action, questionId });
@@ -166,9 +183,10 @@ const setupSockets = (io) => {
           activeParticipants.delete(socket.id);
           
           // Update participant count for presenter
+          const participantCount = getParticipantCount(surveyId);
           io.to(`presenter:${surveyId}`).emit('participantLeft', { 
             nickname, 
-            count: getParticipantCount(surveyId)
+            count: participantCount
           });
           
           console.log(`Participant ${nickname} disconnected from survey ${surveyId}`);
@@ -190,14 +208,46 @@ const setupSockets = (io) => {
     return count;
   }
   
-  // Helper function to calculate aggregate data for responses
-  function calculateAggregateData(surveyId, questionId) {
-    // In a real implementation, this would query the database
-    // and calculate aggregate statistics
-    return {
-      totalResponses: 0,
-      // Additional aggregated data would go here
-    };
+  // Helper function to update aggregate results
+  async function updateAggregateResults(io, surveyId, questionId) {
+    try {
+      const responses = await Response.find({ surveyId, questionId });
+      
+      if (responses.length === 0) return;
+      
+      // Group and count responses
+      const counts = {};
+      const textResponses = [];
+      
+      responses.forEach(r => {
+        if (typeof r.response === 'string' && r.response.length > 30) {
+          // Likely a text response
+          textResponses.push(r.response);
+        } else if (Array.isArray(r.response)) {
+          // Multiple choice with multiple selections
+          r.response.forEach(val => {
+            counts[val] = (counts[val] || 0) + 1;
+          });
+        } else {
+          // Single value response
+          counts[r.response] = (counts[r.response] || 0) + 1;
+        }
+      });
+      
+      const aggregateData = {
+        counts,
+        textResponses,
+        totalResponses: responses.length
+      };
+      
+      // Emit to everyone in the survey room
+      io.to(`survey:${surveyId}`).emit('aggregateResults', { 
+        questionId, 
+        results: aggregateData 
+      });
+    } catch (error) {
+      console.error('Error updating aggregate results:', error);
+    }
   }
 };
 

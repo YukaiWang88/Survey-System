@@ -1,33 +1,104 @@
-@layer components {
-  .glass-effect {
-    @apply bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl shadow-2xl;
-  }
+:root {
+  --primary-color: #4a90e2;
+  --secondary-color: #50e3c2;
+  --accent-color: #f5a623;
+  --error-color: #e74c3c;
+  --success-color: #2ecc71;
+  --text-color: #333333;
+  --background-color: #f8f9fa;
+  --card-background: #ffffff;
+  --border-color: #e1e1e1;
+}
 
-  .modern-input {
-    @apply w-full bg-white/5 rounded-lg px-4 py-3 text-gray-100 
-           focus:outline-none focus:ring-2 focus:ring-indigo-400 
-           transition-all duration-200 placeholder:text-gray-400;
-  }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-  .primary-button {
-    @apply bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium
-           hover:bg-indigo-700 transition-colors flex items-center 
-           justify-center gap-2 shadow-md hover:shadow-indigo-500/20;
-  }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  line-height: 1.5;
+}
 
-  .option-card {
-    @apply bg-white/5 p-4 cursor-pointer hover:bg-white/10
-           transition-all relative overflow-hidden;
-    
-    &.selected {
-      @apply ring-2 ring-indigo-400 bg-indigo-500/10;
-    }
-  }
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
 
-  .chart-container {
-    @apply glass-effect p-6 rounded-xl;
-    canvas {
-      @apply max-h-[400px] w-full;
-    }
+button {
+  cursor: pointer;
+  padding: 10px 16px;
+  border-radius: 4px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: #3a80d2;
+}
+
+.btn-secondary {
+  background-color: white;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+}
+
+.btn-secondary:hover {
+  background-color: #f0f5ff;
+}
+
+input, textarea, select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+.error-message {
+  color: var(--error-color);
+  margin-bottom: 16px;
+  padding: 10px;
+  background-color: rgba(231, 76, 60, 0.1);
+  border-radius: 4px;
+}
+
+.success-message {
+  color: var(--success-color);
+  margin-bottom: 16px;
+  padding: 10px;
+  background-color: rgba(46, 204, 113, 0.1);
+  border-radius: 4px;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 18px;
+  color: var(--primary-color);
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 16px;
   }
 }

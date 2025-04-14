@@ -1,22 +1,59 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { SocketProvider } from './contexts/SocketContext';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
-import LandingPage from './pages/LandingPage';
-import PresenterDashboard from './pages/PresenterDashboard';
-import AudienceView from './pages/AudienceView';
+import { SocketProvider } from './contexts/SocketContext';
+import HomePage from './pages/HomePage';
+import Dashboard from './pages/Dashboard';
+import CreateSurvey from './pages/CreateSurvey';
+import PresentSurvey from './pages/PresentSurvey';
+import JoinSurvey from './pages/JoinSurvey';
+import ParticipantView from './pages/ParticipantView';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import NotFound from './pages/NotFound';
+import PrivateRoute from './components/common/PrivateRoute';
+import './styles/main.css';
 
-export default function App() {
+function App() {
   return (
-    <AuthProvider>
-      <SocketProvider>
-        <BrowserRouter>
+    <Router>
+      <AuthProvider>
+        <SocketProvider>
           <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/present/:roomId" element={<PresenterDashboard />} />
-            <Route path="/join/:roomId" element={<AudienceView />} />
+            <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/join" element={<JoinSurvey />} />
+            <Route path="/survey/:code" element={<ParticipantView />} />
+            
+            {/* Protected routes */}
+            <Route path="/dashboard" element={
+              <PrivateRoute>
+                <Dashboard />
+              </PrivateRoute>
+            } />
+            <Route path="/create" element={
+              <PrivateRoute>
+                <CreateSurvey />
+              </PrivateRoute>
+            } />
+            <Route path="/edit/:id" element={
+              <PrivateRoute>
+                <CreateSurvey isEditing={true} />
+              </PrivateRoute>
+            } />
+            <Route path="/present/:surveyId" element={
+              <PrivateRoute>
+                <PresentSurvey />
+              </PrivateRoute>
+            } />
+            
+            <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
-      </SocketProvider>
-    </AuthProvider>
+        </SocketProvider>
+      </AuthProvider>
+    </Router>
   );
 }
+
+export default App;

@@ -1,36 +1,29 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import io from 'socket.io-client';
 
 const SocketContext = createContext();
+
+export function useSocket() {
+  return useContext(SocketContext);
+}
 
 export function SocketProvider({ children }) {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    const newSocket = io(process.env.REACT_APP_API_URL, {
-      transports: ['websocket'],
-      autoConnect: false
-    });
-
+    // Initialize socket connection
+    const newSocket = io('http://localhost:3000');
     setSocket(newSocket);
 
+    // Clean up on unmount
     return () => {
-      if (newSocket) newSocket.disconnect();
+      newSocket.disconnect();
     };
   }, []);
 
-  const connectSocket = (token) => {
-    if (socket) {
-      socket.auth = { token };
-      socket.connect();
-    }
-  };
-
   return (
-    <SocketContext.Provider value={{ socket, connectSocket }}>
+    <SocketContext.Provider value={{ socket }}>
       {children}
     </SocketContext.Provider>
   );
 }
-
-export const useSocket = () => useContext(SocketContext);

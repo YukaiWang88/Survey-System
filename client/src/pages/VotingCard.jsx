@@ -1,18 +1,14 @@
 import React, { useState } from 'react';
 import { FiCheck } from 'react-icons/fi';
-import { useSocket } from '../../contexts/SocketContext';
 import { AnimatePresence, motion } from 'framer-motion';
+import '../../styles/voting-card.css';
 
-export default function VotingCard({ poll }) {
-  const { socket } = useSocket();
+export default function VotingCard({ poll, onVote }) {
   const [selectedOption, setSelectedOption] = useState(null);
 
   const handleVote = (optionId) => {
     setSelectedOption(optionId);
-    socket.emit('submit-vote', { 
-      roomCode: poll.roomCode, 
-      optionId 
-    });
+    onVote(optionId);
   };
 
   return (
