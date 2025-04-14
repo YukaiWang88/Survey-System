@@ -23,7 +23,7 @@ const Navbar = () => {
       <div className="navbar-menu">
         {currentUser ? (
           <>
-            <Link to="/dashboard" className="nav-link">Dashboard</Link>
+            <Link to="/dashboard" className="btn-primary nav-button">Dashboard</Link>
             <div className="nav-user">
               <span>{currentUser.name}</span>
               <button onClick={handleLogout} className="logout-button">
@@ -33,8 +33,8 @@ const Navbar = () => {
           </>
         ) : (
           <>
-            <Link to="/join" className="nav-link">Join</Link>
-            <Link to="/login" className="nav-link">Login</Link>
+            <Link to="/join" className="btn-primary nav-button">Join</Link>
+            <Link to="/login" className="btn-primary nav-button">Login</Link>
             <Link to="/register" className="btn-primary nav-button">Sign Up</Link>
           </>
         )}
