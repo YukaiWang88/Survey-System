@@ -14,7 +14,7 @@ const AccountCreated = () => {
   return (
     <div className="account-created">
       <div className="overlap">
-        <div className="text-wrapper">account-created.html</div>
+        <div className="text-wrapper"></div>
       </div>
 
       <p className="QUIZLET">

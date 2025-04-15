@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 
-export default function LandingPage() {
+function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 to-blue-800 flex items-center justify-center">
       <div className="glass-effect p-8 rounded-2xl max-w-md w-full space-y-6">
@@ -36,4 +36,6 @@ export default function LandingPage() {
       </div>
     </div>
   );
-}
+};
+
+export default LandingPage;

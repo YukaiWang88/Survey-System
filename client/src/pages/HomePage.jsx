@@ -188,7 +188,7 @@ const HomePage = () => {
                   <span className="browser-button"></span>
                   <span className="browser-button"></span>
                 </div>
-                <div className="browser-address">survey-system.com/present</div>
+                <div className="browser-address">quizlet.com/present</div>
               </div>
               <div className="browser-content">
                 <div className="mockup-question">How satisfied are you with the product?</div>

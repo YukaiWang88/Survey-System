@@ -33,7 +33,7 @@ const Logout = () => {
   return (
     <div className="admin-logout">
       <div className="overlap">
-        <div className="text-wrapper">logout.html?username={username.toLowerCase()}</div>
+        <div className="text-wrapper"></div>
       </div>
 
       <p className="QUIZLET">

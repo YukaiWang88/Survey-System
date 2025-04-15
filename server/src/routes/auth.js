@@ -201,3 +201,5 @@ router.get('/verify', async (req, res) => {
     res.status(401).json({ message: "Please authenticate" });
   }
 });
+
+module.exports = router;

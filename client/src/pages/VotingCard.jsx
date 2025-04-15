@@ -3,7 +3,7 @@ import { FiCheck } from 'react-icons/fi';
 import { AnimatePresence, motion } from 'framer-motion';
 import '../../styles/voting-card.css';
 
-export default function VotingCard({ poll, onVote }) {
+function VotingCard({ poll, onVote }) {
   const [selectedOption, setSelectedOption] = useState(null);
 
   const handleVote = (optionId) => {
@@ -45,4 +45,6 @@ export default function VotingCard({ poll, onVote }) {
       </div>
     </div>
   );
-}
+};
+
+export default VotingCard;

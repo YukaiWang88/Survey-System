@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import PollCreator from '../components/presenter/PollCreator';
 import LiveResults from '../components/common/LiveResults';
 
-export default function PresenterDashboard() {
+function PresenterDashboard() {
   const { roomId } = useParams();
   const [polls, setPolls] = useState([]);
   const [activePoll, setActivePoll] = useState(null);
@@ -27,4 +27,6 @@ export default function PresenterDashboard() {
       </div>
     </div>
   );
-}
+};
+
+export default PresenterDashboard;
