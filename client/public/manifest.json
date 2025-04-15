@@ -1,5 +1,5 @@
 {
-    "short_name": "Survey System",
+    "short_name": "Quizlet",
     "name": "Interactive Polling and Survey System",
     "icons": [
       {
@@ -13,3 +13,5 @@
     "theme_color": "#000000",
     "background_color": "#ffffff"
   }
+
+  
