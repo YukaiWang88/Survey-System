@@ -6,7 +6,9 @@ import HomePage from './pages/HomePage';
 import Dashboard from './pages/Dashboard';
 import CreateSurvey from './pages/CreateSurvey';
 import PresentSurvey from './pages/PresentSurvey';
-import JoinSurvey from './pages/JoinSurvey';
+// import JoinSurvey from './pages/JoinSurvey';
+import SurveyLanding from './pages/SurveyLanding';
+import JoinSurveyForm from './pages/JoinSurveyForm';
 import ParticipantView from './pages/ParticipantView';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -23,7 +25,9 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/join" element={<JoinSurvey />} />
+            {/* <Route path="/join" element={<JoinSurvey />} /> */}
+            <Route path="/join" element={<SurveyLanding />} />
+            <Route path="/join/code" element={<JoinSurveyForm />} />
             <Route path="/survey/:code" element={<ParticipantView />} />
             
             {/* Protected routes */}
