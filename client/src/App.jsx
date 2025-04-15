@@ -6,12 +6,13 @@ import HomePage from './pages/HomePage';
 import Dashboard from './pages/Dashboard';
 import CreateSurvey from './pages/CreateSurvey';
 import PresentSurvey from './pages/PresentSurvey';
-// import JoinSurvey from './pages/JoinSurvey';
 import SurveyLanding from './pages/SurveyLanding';
 import JoinSurveyForm from './pages/JoinSurveyForm';
 import ParticipantView from './pages/ParticipantView';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Logout from './pages/Logout';
+import AccountCreated from './pages/AccountCreated';
 import NotFound from './pages/NotFound';
 import PrivateRoute from './components/common/PrivateRoute';
 import './styles/main.css';
@@ -25,7 +26,8 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            {/* <Route path="/join" element={<JoinSurvey />} /> */}
+            <Route path="/logout" element={<Logout />} />
+            <Route path="/account-created" element={<AccountCreated />} />
             <Route path="/join" element={<SurveyLanding />} />
             <Route path="/join/code" element={<JoinSurveyForm />} />
             <Route path="/survey/:code" element={<ParticipantView />} />

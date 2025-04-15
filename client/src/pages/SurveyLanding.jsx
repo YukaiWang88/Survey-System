@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import Navbar from '../components/common/Navbar';
 import PcSurveyButton from '../components/common/PcSurveyButton';
 import PcParticipant from '../components/common/PcParticipant';
 import '../styles/survey-landing.css';
@@ -17,15 +18,8 @@ const SurveyLanding = () => {
   
   return (
     <div className="admin-usertype">
-      <div className="div-wrapper">
-        <div className="text-wrapper">index.html</div>
-      </div>
-
-      <p className="QUIZLET">
-        <span className="span">S</span>
-        <span className="text-wrapper-2">urvey System</span>
-      </p>
-
+      <Navbar />
+      
       <div className="frame-2">
         <PcSurveyButton 
           className="PC-survey-button-instance" 
@@ -34,10 +28,6 @@ const SurveyLanding = () => {
         <PcParticipant 
           onClick={handleJoinSurvey}
         />
-      </div>
-
-      <div className="PC-user">
-        <img className="img" alt="User" src="/logo.png" />
       </div>
     </div>
   );

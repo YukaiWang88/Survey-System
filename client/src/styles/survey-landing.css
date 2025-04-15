@@ -1,5 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700&display=swap');
 
+/* Add this near the top of your file */
+.survey-title {
+  margin-top: 20px !important; /* Override the default margin to account for navbar */
+}
+
+
 .admin-usertype {
   background-color: #f9f9f9;
   min-height: 100vh;
@@ -29,6 +35,7 @@
   top: 17px;
 }
 
+/* Update the following class */
 .admin-usertype .QUIZLET {
   color: #0062b2;
   font-family: "Jost", sans-serif;
@@ -37,8 +44,8 @@
   left: 20px;
   letter-spacing: 0;
   line-height: normal;
-  position: absolute;
-  top: 84px;
+  position: relative; /* Changed from absolute */
+  margin-top: 84px;
 }
 
 .admin-usertype .span {
@@ -53,17 +60,17 @@
   font-size: 36px;
 }
 
+/* And update the frame-2 to be positioned relative instead of absolute */
 .admin-usertype .frame-2 {
   align-items: center;
   display: flex;
   gap: 167px;
   justify-content: center;
-  left: 0;
-  position: absolute;
-  top: 200px;
   width: 100%;
   padding: 100px 0;
   flex-wrap: wrap;
+  margin-top: 100px; /* Add margin instead of absolute positioning */
+  position: relative; /* Changed from absolute */
 }
 
 .admin-usertype .PC-user {
@@ -419,4 +426,20 @@
     font-size: 32px;
     top: 240px;
   }
+}
+
+/* icon */
+.admin-usertype .PC-user {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+}
+
+.admin-usertype .PC-user .img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
 }

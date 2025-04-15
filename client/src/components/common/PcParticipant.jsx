@@ -17,11 +17,11 @@ const PcParticipant = ({ className, onClick }) => {
       <div className="frame">
         <div className="overlap">
           <div className="overlap-group">
-            <img
+            {/* <img
               className="subtract"
               alt="Participant"
               src={isHovered ? "/participant-hover.svg" : "/participant-default.svg"}
-            />
+            /> */}
             <div className="ellipse"></div>
             {!isHovered && <div className="rectangle"></div>}
           </div>

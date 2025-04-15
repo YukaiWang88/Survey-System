@@ -1,40 +1,44 @@
 import React, { useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthContext';
 import '../../styles/navbar.css';
 
 const Navbar = () => {
-  const { currentUser, logout } = useContext(AuthContext);
-  
+  const { currentUser } = useContext(AuthContext);
+  const navigate = useNavigate();
+
   return (
     <nav className="navbar">
-      <div className="navbar-container">
-        <div className="navbar-brand">
-          <Link to="/" className="logo-link">
-            <span className="logo-text">Quizlet</span>
-          </Link>
-        </div>
-        
-        <div className="navbar-menu">
-          <div className="navbar-start">
-            <Link to="/join" className="nav-link">Join</Link>
-          </div>
-          
-          <div className="navbar-end">
-            {currentUser ? (
-              <div className="user-section">
-                <span className="welcome-text">Welcome, {currentUser.name}</span>
-                <Link to="/dashboard" className="nav-link">Dashboard</Link>
-                <button onClick={logout} className="logout-btn">Logout</button>
-              </div>
-            ) : (
-              <>
-                <Link to="/login" className="nav-link">Login</Link>
-                <Link to="/register" className="btn-signup">Sign Up</Link>
-              </>
-            )}
-          </div>
-        </div>
+      <div className="navbar-brand">
+        <Link to="/" className="logo-link">Quizlet</Link>
+      </div>
+      
+      <div className="navbar-menu">
+        <Link to="/join" className="navbar-item">Join Survey</Link>
+        {currentUser ? (
+          <>
+            <Link to="/dashboard" className="navbar-item">Dashboard</Link>
+            <div className="user-profile" onClick={() => navigate('/logout')}>
+              <img 
+                src="/loggedin.png" 
+                alt="User Profile" 
+                className="user-avatar" 
+              />
+            </div>
+          </>
+        ) : (
+          <>
+            <Link to="/login" className="navbar-item">Login</Link>
+            <Link to="/register" className="navbar-item">Register</Link>
+            <div className="user-profile" onClick={() => navigate('/login')}>
+              <img 
+                src="/login.png" 
+                alt="Login" 
+                className="user-avatar" 
+              />
+            </div>
+          </>
+        )}
       </div>
     </nav>
   );
