@@ -64,3 +64,5 @@ export const ScaleQuestion = ({
     </div>
   );
 };
+
+export default ScaleQuestion;

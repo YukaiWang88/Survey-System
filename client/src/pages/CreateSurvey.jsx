@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from '../components/common/Navbar';
-// Fix imports to use the actual component files
 import MCQuestionEditor from '../components/survey/MCQuestionEditor';
 import WordCloudEditor from '../components/survey/WordCloudEditor';
 import ScaleQuestionEditor from '../components/survey/ScaleQuestionEditor';

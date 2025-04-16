@@ -1,51 +1,83 @@
 import React from 'react';
 
-const QuestionTypeSelector = ({ onSelect }) => {
-  const questionTypes = [
-    {
-      type: 'multiple-choice',
-      name: 'Multiple Choice',
-      description: 'Let participants select from predefined options'
-    },
-    {
-      type: 'word-cloud',
-      name: 'Word Cloud',
-      description: 'Collect open-ended responses and display as a word cloud'
-    },
-    {
-      type: 'scale',
-      name: 'Rating Scale',
-      description: 'Use a scale to measure opinion or sentiment'
-    },
-    {
-      type: 'quiz-mc',
-      name: 'Quiz Question',
-      description: 'Multiple choice question with correct answers'
-    },
-    {
-      type: 'instruction',
-      name: 'Instruction',
-      description: 'Add text instruction or information slides'
-    }
-  ];
-
+const QuizMCEditor = ({ question, onChange, index }) => {
   return (
-    <div className="question-type-selector">
-      <h2>Select Question Type</h2>
-      <div className="question-type-grid">
-        {questionTypes.map((qt) => (
-          <div 
-            key={qt.type} 
-            className="question-type-card"
-            onClick={() => onSelect(qt.type)}
-          >
-            <h3>{qt.name}</h3>
-            <p>{qt.description}</p>
+    <div className="question-editor">
+      <div className="question-header">
+        <h3>Quiz Question</h3>
+        <div className="question-actions">
+          <button 
+            type="button" 
+            className="action-btn" 
+            onClick={() => onChange('moveUp', index)}
+            title="Move Up"
+          >↑</button>
+          <button 
+            type="button" 
+            className="action-btn" 
+            onClick={() => onChange('moveDown', index)}
+            title="Move Down"
+          >↓</button>
+          <button 
+            type="button" 
+            className="action-btn delete-btn" 
+            onClick={() => onChange('delete', index)}
+            title="Delete Question"
+          >×</button>
+        </div>
+      </div>
+      
+      <div className="form-group">
+        <label>Question</label>
+        <input
+          type="text"
+          value={question.title || ''}
+          onChange={(e) => onChange('title', index, e.target.value)}
+          placeholder="Enter your question"
+          className="form-control"
+        />
+      </div>
+      
+      <div className="options-container">
+        <label>Options (select the correct answer)</label>
+        {(question.options || []).map((option, optionIndex) => (
+          <div key={optionIndex} className="option-row quiz-option">
+            <input
+              type="radio"
+              checked={option.isCorrect || false}
+              onChange={() => onChange('setCorrect', index, null, optionIndex)}
+              name={`correct-option-${index}`}
+              id={`option-${index}-${optionIndex}`}
+            />
+            <input
+              type="text"
+              value={option.text || ''}
+              onChange={(e) => onChange('optionText', index, e.target.value, optionIndex)}
+              placeholder={`Option ${optionIndex + 1}`}
+              className="form-control"
+            />
+            <button
+              type="button"
+              className="btn-icon"
+              onClick={() => onChange('removeOption', index, null, optionIndex)}
+              disabled={(question.options || []).length <= 2}
+              title="Remove Option"
+            >
+              ×
+            </button>
           </div>
         ))}
+        
+        <button
+          type="button"
+          className="btn-secondary btn-sm"
+          onClick={() => onChange('addOption', index)}
+        >
+          Add Option
+        </button>
       </div>
     </div>
   );
 };
 
-export default QuestionTypeSelector;
+export default QuizMCEditor;

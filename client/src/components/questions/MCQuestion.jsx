@@ -52,3 +52,5 @@ export const MultipleChoiceQuestion = ({
     </div>
   );
 };
+
+export default MultipleChoiceQuestion;

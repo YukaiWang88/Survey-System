@@ -61,3 +61,5 @@ export const QuizQuestion = ({
       </div>
     );
   };
+
+export default QuizQuestion;

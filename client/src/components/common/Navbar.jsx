@@ -1,44 +1,65 @@
 import React, { useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthContext';
 import '../../styles/navbar.css';
 
 const Navbar = () => {
   const { currentUser } = useContext(AuthContext);
-  const navigate = useNavigate();
-
+  const location = useLocation();
+  
   return (
     <nav className="navbar">
-      <div className="navbar-brand">
-        <Link to="/" className="logo-link">Quizlet</Link>
-      </div>
-      
-      <div className="navbar-menu">
-        <Link to="/join" className="navbar-item">Join Survey</Link>
-        {currentUser ? (
-          <>
-            <Link to="/dashboard" className="navbar-item">Dashboard</Link>
-            <div className="user-profile" onClick={() => navigate('/logout')}>
-              <img 
-                src="/loggedin.png" 
-                alt="User Profile" 
-                className="user-avatar" 
-              />
-            </div>
-          </>
-        ) : (
-          <>
-            <Link to="/login" className="navbar-item">Login</Link>
-            <Link to="/register" className="navbar-item">Register</Link>
-            <div className="user-profile" onClick={() => navigate('/login')}>
-              <img 
-                src="/login.png" 
-                alt="Login" 
-                className="user-avatar" 
-              />
-            </div>
-          </>
-        )}
+      <div className="navbar-container">
+        <div className="navbar-brand-container">
+          <Link to="/" className="navbar-brand">
+            <h1>Quizlet</h1>
+          </Link>
+        </div>
+        
+        <div className="navbar-links">
+          {currentUser ? (
+            <>
+              <Link 
+                to="/join/code" 
+                className={`navbar-link ${location.pathname.includes('/join') ? 'active' : ''}`}
+              >
+                Join Survey
+              </Link>
+              <Link 
+                to="/dashboard" 
+                className={`navbar-link ${location.pathname === '/dashboard' ? 'active' : ''}`}
+              >
+                Dashboard
+              </Link>
+              <Link to="/logout" className="navbar-link account-link">
+                <div className="user-avatar">
+                  <span>{currentUser.name ? currentUser.name.charAt(0).toUpperCase() : '?'}</span>
+                </div>
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link 
+                to="/join/code" 
+                className={`navbar-link ${location.pathname.includes('/join') ? 'active' : ''}`}
+              >
+                Join Survey
+              </Link>
+              <Link 
+                to="/login" 
+                className={`navbar-link ${location.pathname === '/login' ? 'active' : ''}`}
+              >
+                Login
+              </Link>
+              <Link 
+                to="/register" 
+                className="navbar-link btn-nav"
+              >
+                Sign Up
+              </Link>
+            </>
+          )}
+        </div>
       </div>
     </nav>
   );

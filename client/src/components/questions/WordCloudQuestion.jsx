@@ -38,3 +38,5 @@ export const WordCloudQuestion = ({
     </div>
   );
 };
+
+export default WordCloudQuestion;

@@ -1,78 +1,58 @@
-import React, { useContext } from "react";
-import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../contexts/AuthContext";
-import "../styles/logout.css";
+import React, { useContext, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../contexts/AuthContext';
+import Navbar from '../components/common/Navbar';
+import '../styles/logout.css';
 
 const Logout = () => {
   const { currentUser, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   
-  // Handle sign out
-  const handleSignOut = async () => {
+  // Redirect if not logged in
+  useEffect(() => {
+    if (!currentUser) {
+      navigate('/login');
+    }
+  }, [currentUser, navigate]);
+
+  const handleLogout = async () => {
     try {
       await logout();
+      // Redirect to homepage after logout
       navigate('/');
-    } catch (err) {
-      console.error("Failed to logout:", err);
+    } catch (error) {
+      console.error('Logout failed', error);
     }
   };
-  
-  // Handle return to previous page
-  const handleReturn = () => {
-    navigate(-1);
-  };
-  
-  // Handle view history (placeholder)
-  const handleViewHistory = () => {
-    navigate('/history'); // You'll need to create this route
-  };
-  
-  // Get username and capitalize first letter
-  const username = currentUser?.name || currentUser?.email?.split('@')[0] || "User";
+
+  if (!currentUser) return null;
 
   return (
-    <div className="admin-logout">
-      <div className="overlap">
-        <div className="text-wrapper"></div>
-      </div>
-
-      <p className="QUIZLET">
-        <span className="span">Q</span>
-        <span className="text-wrapper-2">UIZLET</span>
-      </p>
-
-      <div className="frame">
-        <div className="div">
-          <div className="text-wrapper-3">Logged In As</div>
-
-          <div className="frame-2">
-            <div className="frame-3">
-              <div className="text-wrapper-4">{username}</div>
-              <img 
-                className="ellipse" 
-                alt="User" 
-                src="/loggedin.png" 
-              />
+    <div className="logout-container">
+      <Navbar />
+      
+      <div className="logout-content">
+        <div className="logout-card">
+          <h1>Account Settings</h1>
+          
+          <div className="user-profile">
+            <div className="user-avatar large">
+              <span>{currentUser.name ? currentUser.name.charAt(0).toUpperCase() : '?'}</span>
             </div>
-
-            <div className="frame-wrapper" onClick={handleViewHistory}>
-              <div className="frame-4">
-                <div className="text-wrapper-5">View History</div>
-                <div className="rectangle" />
-              </div>
+            <div className="user-details">
+              <h2>{currentUser.name || 'User'}</h2>
+              <p>{currentUser.email}</p>
             </div>
           </div>
-        </div>
-
-        <div className="div-wrapper" onClick={handleSignOut}>
-          <div className="text-wrapper-6">sign out</div>
-        </div>
-      </div>
-
-      <div className="overlap-group-wrapper" onClick={handleReturn}>
-        <div className="overlap-group">
-          <div className="text-wrapper-7">return</div>
-          <div className="rectangle-2" />
+          
+          <div className="account-actions">
+            <Link to="/dashboard" className="btn-secondary">
+              Back to Dashboard
+            </Link>
+            <button onClick={handleLogout} className="btn-danger">
+              Sign Out
+            </button>
+          </div>
         </div>
       </div>
     </div>

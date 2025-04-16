@@ -1,57 +1,98 @@
 .navbar {
-  background-color: #2d2d2d;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 20px;
-  height: 80px;
+  background-color: #262626;
+  padding: 1rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
   width: 100%;
 }
 
-.navbar-brand {
-  font-family: "Jost", sans-serif;
-  font-size: 32px;
-  font-weight: 700;
+.navbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  width: 100%;
 }
 
-.logo-link {
-  color: #ffffff;
+/* Add this to ensure consistent brand positioning */
+.navbar-brand-container {
+  flex: 0 0 auto;
+}
+
+.navbar-brand {
   text-decoration: none;
 }
 
-.navbar-menu {
+.navbar-brand h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+}
+
+.navbar-links {
   display: flex;
   align-items: center;
-  gap: 20px;
-  /* Add padding to prevent icon from getting cut off */
-  padding-right: 20px;
+  gap: 1.5rem;
+  justify-content: flex-end;
+  flex: 1;
 }
 
-.navbar-item {
-  color: #ffffff;
-  font-family: "Jost", sans-serif;
-  font-size: 18px;
+.navbar-link {
+  color: rgba(255, 255, 255, 0.8);
   text-decoration: none;
-  transition: opacity 0.2s;
+  font-weight: 500;
+  transition: color 0.2s ease;
+  white-space: nowrap;
 }
 
-.navbar-item:hover {
-  opacity: 0.8;
+.navbar-link:hover,
+.navbar-link.active {
+  color: white;
 }
 
-/* Make sure the user profile container has proper dimensions */
-.user-profile {
-  cursor: pointer;
-  height: 40px;
-  width: 40px;
-  /* Add margin to prevent the icon from touching the edge */
-  margin-right: 10px;
+.navbar-link.btn-nav {
+  background-color: var(--primary-color);
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+  color: white;
 }
 
-/* Fix the icon size and ensure it's fully contained */
+.navbar-link.btn-nav:hover {
+  background-color: #3a52d9;
+}
+
 .user-avatar {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  object-fit: cover;
+  background-color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .navbar-container {
+    padding: 0 1rem;
+  }
+  
+  .navbar-links {
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar-brand h1 {
+    font-size: 1.5rem;
+  }
+  
+  .navbar-link {
+    font-size: 0.9rem;
+  }
 }

@@ -33,27 +33,41 @@ const PresentSurvey = () => {
     }
     
     const fetchSurvey = async () => {
-      try {
-        const token = localStorage.getItem('authToken');
-        const response = await axios.get(`http://localhost:3000/api/surveys/${surveyId}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        setSurvey(response.data);
-        
-        // Get or generate survey code
-        const codeResponse = await axios.post(
-          `http://localhost:3000/api/surveys/${surveyId}/generate-code`,
-          {},
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setSurveyCode(codeResponse.data.code);
-      } catch (err) {
-        setError('Failed to load survey');
-        console.error(err);
-      } finally {
-        setLoading(false);
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await axios.get(`http://localhost:3000/api/surveys/${surveyId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (!response.data) {
+        throw new Error('Empty response received');
       }
+      
+      setSurvey(response.data);
+      
+      // Get or generate survey code
+      const codeResponse = await axios.post(
+        `http://localhost:3000/api/surveys/${surveyId}/generate-code`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setSurveyCode(codeResponse.data.code);
+    } catch (err) {
+      console.error('Error details:', err);
+      if (err.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        setError(`Failed to load survey: ${err.response.status} - ${err.response.data.message || 'Unknown error'}`);
+      } else if (err.request) {
+        // The request was made but no response was received
+        setError('No response from server. Please check your connection.');
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        setError(`Error fetching survey: ${err.message}`);
+      }
+    } finally {
+      setLoading(false);
+    }
     };
     
     fetchSurvey();
@@ -125,7 +139,8 @@ const PresentSurvey = () => {
       if (socket) {
         socket.emit('change-question', {
           surveyId,
-          questionIndex: currentQuestionIndex + 1
+          questionIndex: currentQuestionIndex + 1,
+          questionId: currentQuestionIndex + 1
         });
       }
     }
@@ -164,7 +179,8 @@ const PresentSurvey = () => {
       });
     }
   };
-  
+
+
   const endPresentation = () => {
     if (socket) {
       socket.emit('end-survey', { surveyId });
@@ -205,7 +221,7 @@ const PresentSurvey = () => {
   }
   
   const currentQuestion = survey.questions[currentQuestionIndex];
-  const currentResponses = responses[currentQuestion.id] || [];
+  const currentResponses = responses[currentQuestionIndex] || [];
   const responseRate = participants.length > 0 
     ? Math.round((currentResponses.length / participants.length) * 100)
     : 0;
@@ -252,47 +268,47 @@ const PresentSurvey = () => {
           </div>
           
           <div className="question-display">
-            <h2>{currentQuestion.text}</h2>
+            <h2>{currentQuestion.title}</h2>
           </div>
           
-          <div className="results-container">
-            {currentQuestion.type === 'multiple-choice' && (
-              <MCResults 
-                question={currentQuestion}
-                responses={currentResponses}
-                totalParticipants={participants.length}
-              />
-            )}
-            
-            {currentQuestion.type === 'quiz-mc' && (
-              <QuizResults 
-                question={currentQuestion}
-                responses={currentResponses}
-                totalParticipants={participants.length}
-                showAnswer={showingAnswer}
-              />
-            )}
-            
-            {currentQuestion.type === 'word-cloud' && (
-              <WordCloudResults 
-                responses={currentResponses}
-              />
-            )}
-            
-            {currentQuestion.type === 'scale' && (
-              <ScaleResults 
-                question={currentQuestion}
-                responses={currentResponses}
-                totalParticipants={participants.length}
-              />
-            )}
-            
-            {currentQuestion.type === 'instruction' && (
-              <div className="instruction-display">
-                <p>This is an instruction slide. No responses needed.</p>
-              </div>
-            )}
-          </div>
+            <div className="results-container">
+              {currentQuestion.type === 'mc' && (
+                <MCResults 
+                  question={currentQuestion}
+                  responses={currentResponses}
+                  totalParticipants={participants.length}
+                />
+              )}
+              
+              {currentQuestion.type === 'quiz-mc' && (
+                <QuizResults 
+                  question={currentQuestion}
+                  responses={currentResponses}
+                  totalParticipants={participants.length}
+                  showAnswer={showingAnswer}
+                />
+              )}
+              
+              {currentQuestion.type === 'wordcloud' && (
+                <WordCloudResults 
+                  responses={currentResponses}
+                />
+              )}
+              
+              {currentQuestion.type === 'scale' && (
+                <ScaleResults 
+                  question={currentQuestion}
+                  responses={currentResponses}
+                  totalParticipants={participants.length}
+                />
+              )}
+              
+              {currentQuestion.type === 'instruction' && (
+                <div className="instruction-display">
+                  <p>{currentQuestion.content || 'This is an instruction slide. No responses needed.'}</p>
+                </div>
+              )}
+            </div>
         </div>
         
         <div className="presentation-sidebar">

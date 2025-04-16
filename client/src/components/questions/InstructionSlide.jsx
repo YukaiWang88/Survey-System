@@ -33,3 +33,5 @@ export const InstructionSlide = ({
       </div>
     );
   };
+
+export default InstructionSlide;
