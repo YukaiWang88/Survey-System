@@ -29,7 +29,10 @@ const JoinSurveyForm = () => {
       });
       
       navigate(`/survey/${response.data.surveyId}`, { 
-        state: { participantId: response.data.participantId }
+        state: { 
+          participantId: response.data.participantId,
+          nickname: nickname || 'Anonymous'
+        }
       });
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to join survey');

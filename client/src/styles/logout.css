@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Jost:wght@400;700&display=swap');
 
+
 .admin-logout {
   background-color: #f9f9f9;
   min-height: 100vh;
@@ -271,3 +272,4 @@
     transform: translateX(-50%);
   }
 }
+

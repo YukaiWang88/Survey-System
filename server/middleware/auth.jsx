@@ -11,7 +11,7 @@ const auth = async (req, res, next) => {
     }
     
     // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || '665eced222ba5d45aa7e3774cc8d30bb4fc122be7ef6c9e6ec31996bdd78e184a00460c1ab1436c615016dcfc4ece66d3f581fc41c7380adf154a850149ab7c7');
     
     // Find user with that id (excluding password)
     const user = await User.findById(decoded.userId).select('-password');

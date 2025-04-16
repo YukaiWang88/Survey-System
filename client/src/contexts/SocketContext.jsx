@@ -1,20 +1,16 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
 import io from 'socket.io-client';
 
-const SocketContext = createContext();
+export const SocketContext = createContext();
 
-export function useSocket() {
-  return useContext(SocketContext);
-}
-
-export function SocketProvider({ children }) {
+export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    // Initialize socket connection
+    // Connect to socket server
     const newSocket = io('http://localhost:3000');
     setSocket(newSocket);
-
+    
     // Clean up on unmount
     return () => {
       newSocket.disconnect();
@@ -22,8 +18,8 @@ export function SocketProvider({ children }) {
   }, []);
 
   return (
-    <SocketContext.Provider value={{ socket }}>
+    <SocketContext.Provider value={socket}>
       {children}
     </SocketContext.Provider>
   );
-}
+};

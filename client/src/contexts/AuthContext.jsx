@@ -5,63 +5,94 @@ export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
-    const checkLoggedIn = async () => {
+    const verifyUser = async () => {
+      const token = localStorage.getItem('authToken');
+      
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
+      
       try {
-        const token = localStorage.getItem('authToken');
+        const response = await axios.get('http://localhost:3000/api/auth/verify', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
         
-        if (token) {
-          // Add token to axios defaults
-          axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-          
-          // Verify token and get user data
-          const response = await axios.get('http://localhost:3000/api/auth/verify');
-          setCurrentUser(response.data.user);
-        }
-      } catch (err) {
-        // If token is invalid, remove it
+        setCurrentUser(response.data.user);
+      } catch (error) {
+        // Token is invalid or expired
         localStorage.removeItem('authToken');
-        axios.defaults.headers.common['Authorization'] = '';
+        console.error('Auth verification failed:', error);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
     
-    checkLoggedIn();
+    verifyUser();
   }, []);
   
   const login = async (email, password) => {
-    const response = await axios.post('http://localhost:3000/api/auth/login', {
-      email,
-      password
-    });
-    
-    const { token, user } = response.data;
-    localStorage.setItem('authToken', token);
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    setCurrentUser(user);
-    
-    return user;
+    try {
+      const response = await axios.post('http://localhost:3000/api/auth/login', {
+        email,
+        password
+      });
+      
+      const { token, user } = response.data;
+      localStorage.setItem('authToken', token);
+      setCurrentUser(user);
+      
+      return user;
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
   };
   
-  const logout = () => {
-    localStorage.removeItem('authToken');
-    axios.defaults.headers.common['Authorization'] = '';
-    setCurrentUser(null);
+  const register = async (name, email, password) => {
+    try {
+      const response = await axios.post('http://localhost:3000/api/auth/register', {
+        name,
+        email,
+        password
+      });
+      
+      const { token, user } = response.data;
+      localStorage.setItem('authToken', token);
+      setCurrentUser(user);
+      
+      return user;
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw error;
+    }
+  };
+  
+  const logout = async () => {
+    try {
+      localStorage.removeItem('authToken');
+      setCurrentUser(null);
+      return true;
+    } catch (error) {
+      console.error('Logout error:', error);
+      throw error;
+    }
   };
   
   const value = {
     currentUser,
-    loading,
     login,
-    logout
+    register,
+    logout,
+    isLoading
   };
   
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {!isLoading && children}
     </AuthContext.Provider>
   );
 };

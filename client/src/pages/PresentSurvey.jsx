@@ -1,32 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import io from 'socket.io-client';
-import ResultsChart from '../components/presenter/ResultsChart';
-import ParticipantCounter from '../components/presenter/ParticipantCounter';
-import QRCode from '../components/presenter/QRCode';
+import { SocketContext } from '../contexts/SocketContext';
+import { AuthContext } from '../contexts/AuthContext';
+import Navbar from '../components/common/Navbar';
+import MCResults from '../components/results/MCResults';
+import WordCloudResults from '../components/results/WordCloudResults';
+import ScaleResults from '../components/results/ScaleResults';
+import QuizResults from '../components/results/QuizResults';
 import '../styles/present-survey.css';
 
 const PresentSurvey = () => {
   const { surveyId } = useParams();
   const navigate = useNavigate();
+  const socket = useContext(SocketContext);
+  const { currentUser } = useContext(AuthContext);
+  
   const [survey, setSurvey] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [isActive, setIsActive] = useState(false);
-  const [participantCount, setParticipantCount] = useState(0);
   const [responses, setResponses] = useState({});
-  const [socket, setSocket] = useState(null);
-  const [error, setError] = useState('');
+  const [participants, setParticipants] = useState([]);
+  const [showingQuestion, setShowingQuestion] = useState(true);
+  const [showingAnswer, setShowingAnswer] = useState(false);
+  const [surveyCode, setSurveyCode] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   
-  // Initialize socket and load survey
   useEffect(() => {
-    if (!surveyId) {
-      navigate('/dashboard');
+    if (!currentUser) {
+      navigate('/login');
       return;
     }
     
-    const loadSurvey = async () => {
+    const fetchSurvey = async () => {
       try {
         const token = localStorage.getItem('authToken');
         const response = await axios.get(`http://localhost:3000/api/surveys/${surveyId}`, {
@@ -35,203 +41,297 @@ const PresentSurvey = () => {
         
         setSurvey(response.data);
         
-        // Initialize empty response state
-        const initialResponses = {};
-        response.data.questions.forEach(q => {
-          initialResponses[q._id] = [];
-        });
-        setResponses(initialResponses);
-        
-        // Connect to socket
-        const newSocket = io('http://localhost:3000');
-        setSocket(newSocket);
-        
-        // Join as presenter
-        newSocket.emit('presenterJoin', { 
-          surveyId, 
-          userId: 'current-user-id' // Would be from auth context
-        });
-        
-        setLoading(false);
+        // Get or generate survey code
+        const codeResponse = await axios.post(
+          `http://localhost:3000/api/surveys/${surveyId}/generate-code`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setSurveyCode(codeResponse.data.code);
       } catch (err) {
         setError('Failed to load survey');
+        console.error(err);
+      } finally {
         setLoading(false);
       }
     };
     
-    loadSurvey();
+    fetchSurvey();
     
-    return () => {
-      if (socket) {
-        socket.disconnect();
-      }
-    };
-  }, [surveyId, navigate]);
-  
-  // Socket event listeners
-  useEffect(() => {
-    if (!socket) return;
-    
-    socket.on('participantCount', (data) => {
-      setParticipantCount(data.count);
-    });
-    
-    socket.on('participantJoined', (data) => {
-      setParticipantCount(data.count);
-    });
-    
-    socket.on('participantLeft', (data) => {
-      setParticipantCount(data.count);
-    });
-    
-    socket.on('newResponse', (data) => {
-      setResponses(prev => {
-        const questionResponses = [...(prev[data.questionId] || [])];
-        questionResponses.push(data.response);
-        return { ...prev, [data.questionId]: questionResponses };
+    // Socket setup
+    if (socket) {
+      socket.emit('presenter-join', { surveyId });
+      
+      socket.on('participant-joined', (data) => {
+        setParticipants(prev => [...prev, data.participant]);
       });
-    });
-    
-    return () => {
-      socket.off('participantCount');
-      socket.off('participantJoined');
-      socket.off('participantLeft');
-      socket.off('newResponse');
-    };
-  }, [socket]);
+      
+      socket.on('participant-left', (data) => {
+        setParticipants(prev => prev.filter(p => p.id !== data.participantId));
+      });
+      
+      socket.on('new-response', (data) => {
+        setResponses(prev => {
+          const questionResponses = prev[data.questionId] || [];
+          
+          // Check if this participant already responded
+          const existingIndex = questionResponses.findIndex(
+            r => r.participantId === data.participantId
+          );
+          
+          if (existingIndex >= 0) {
+            // Update existing response
+            const updatedResponses = [...questionResponses];
+            updatedResponses[existingIndex] = {
+              participantId: data.participantId,
+              answer: data.answer,
+              timestamp: Date.now()
+            };
+            return {
+              ...prev,
+              [data.questionId]: updatedResponses
+            };
+          }
+          
+          // Add new response
+          return {
+            ...prev,
+            [data.questionId]: [
+              ...questionResponses,
+              {
+                participantId: data.participantId,
+                answer: data.answer,
+                timestamp: Date.now()
+              }
+            ]
+          };
+        });
+      });
+      
+      return () => {
+        socket.emit('presenter-leave', { surveyId });
+        socket.off('participant-joined');
+        socket.off('participant-left');
+        socket.off('new-response');
+      };
+    }
+  }, [currentUser, navigate, socket, surveyId]);
   
-  const startSurvey = () => {
-    setIsActive(true);
-    socket.emit('controlSurvey', {
-      surveyId,
-      action: 'start',
-      questionId: survey.questions[currentQuestionIndex]._id
-    });
-  };
-  
-  const endSurvey = () => {
-    setIsActive(false);
-    socket.emit('controlSurvey', {
-      surveyId,
-      action: 'end'
-    });
-  };
-  
-  const nextQuestion = () => {
+  const handleNextQuestion = () => {
     if (currentQuestionIndex < survey.questions.length - 1) {
-      const nextIndex = currentQuestionIndex + 1;
-      setCurrentQuestionIndex(nextIndex);
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setShowingAnswer(false);
       
-      socket.emit('controlSurvey', {
-        surveyId,
-        action: 'next',
-        questionId: survey.questions[nextIndex]._id
+      if (socket) {
+        socket.emit('change-question', {
+          surveyId,
+          questionIndex: currentQuestionIndex + 1
+        });
+      }
+    }
+  };
+  
+  const handlePreviousQuestion = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
+      setShowingAnswer(false);
+      
+      if (socket) {
+        socket.emit('change-question', {
+          surveyId,
+          questionIndex: currentQuestionIndex - 1
+        });
+      }
+    }
+  };
+  
+  const toggleShowQuestion = () => {
+    setShowingQuestion(!showingQuestion);
+    
+    if (socket) {
+      socket.emit(showingQuestion ? 'hide-question' : 'show-question', {
+        surveyId
       });
     }
   };
   
-  const previousQuestion = () => {
-    if (currentQuestionIndex > 0) {
-      const prevIndex = currentQuestionIndex - 1;
-      setCurrentQuestionIndex(prevIndex);
-      
-      socket.emit('controlSurvey', {
-        surveyId,
-        action: 'previous',
-        questionId: survey.questions[prevIndex]._id
+  const toggleShowAnswer = () => {
+    setShowingAnswer(!showingAnswer);
+    
+    if (socket) {
+      socket.emit(showingAnswer ? 'hide-answer' : 'show-answer', {
+        surveyId
       });
     }
+  };
+  
+  const endPresentation = () => {
+    if (socket) {
+      socket.emit('end-survey', { surveyId });
+    }
+    navigate('/dashboard');
+  };
+  
+  const isQuizQuestion = () => {
+    if (!survey) return false;
+    return survey.questions[currentQuestionIndex].type.startsWith('quiz-');
   };
   
   if (loading) {
-    return <div className="loading">Loading survey...</div>;
+    return (
+      <div>
+        <Navbar />
+        <div className="loading">Loading presentation...</div>
+      </div>
+    );
   }
   
   if (error) {
-    return <div className="error">{error}</div>;
+    return (
+      <div>
+        <Navbar />
+        <div className="error-container">{error}</div>
+      </div>
+    );
   }
   
   if (!survey) {
-    return <div className="error">Survey not found</div>;
+    return (
+      <div>
+        <Navbar />
+        <div className="error-container">Survey not found</div>
+      </div>
+    );
   }
   
   const currentQuestion = survey.questions[currentQuestionIndex];
-  const currentResponses = responses[currentQuestion._id] || [];
-  const joinUrl = `${window.location.origin}/survey/${survey.code}`;
+  const currentResponses = responses[currentQuestion.id] || [];
+  const responseRate = participants.length > 0 
+    ? Math.round((currentResponses.length / participants.length) * 100)
+    : 0;
   
   return (
-    <div className="present-container">
+    <div className="present-survey-container">
+      <Navbar />
+      
       <div className="presentation-header">
-        <h1>{survey.title}</h1>
-        <div className="survey-code">
-          <span>Join at:</span>
-          <strong>{window.location.host}/join</strong>
-          <span>Code:</span>
-          <strong>{survey.code}</strong>
+        <div className="survey-info">
+          <h1>{survey.title}</h1>
+          <div className="survey-code">
+            Join code: <span>{surveyCode}</span>
+          </div>
         </div>
-        <ParticipantCounter count={participantCount} />
+        
+        <div className="participant-count">
+          <span>{participants.length}</span> Participants
+        </div>
       </div>
       
-      <div className="presentation-body">
-        <div className="question-display">
-          <h2>{currentQuestion.text}</h2>
-          {currentQuestion.type === 'multiple-choice' && (
-            <div className="options-list">
-              {currentQuestion.options.map((option, i) => (
-                <div key={i} className="option-item">
-                  <span>{option.text}</span>
-                </div>
-              ))}
+      <div className="presentation-content">
+        <div className="question-section">
+          <div className="question-navigation">
+            <button 
+              onClick={handlePreviousQuestion} 
+              disabled={currentQuestionIndex === 0}
+              className="nav-btn"
+            >
+              ← Previous
+            </button>
+            
+            <div className="question-progress">
+              Question {currentQuestionIndex + 1} of {survey.questions.length}
             </div>
-          )}
+            
+            <button 
+              onClick={handleNextQuestion} 
+              disabled={currentQuestionIndex === survey.questions.length - 1}
+              className="nav-btn"
+            >
+              Next →
+            </button>
+          </div>
+          
+          <div className="question-display">
+            <h2>{currentQuestion.text}</h2>
+          </div>
+          
+          <div className="results-container">
+            {currentQuestion.type === 'multiple-choice' && (
+              <MCResults 
+                question={currentQuestion}
+                responses={currentResponses}
+                totalParticipants={participants.length}
+              />
+            )}
+            
+            {currentQuestion.type === 'quiz-mc' && (
+              <QuizResults 
+                question={currentQuestion}
+                responses={currentResponses}
+                totalParticipants={participants.length}
+                showAnswer={showingAnswer}
+              />
+            )}
+            
+            {currentQuestion.type === 'word-cloud' && (
+              <WordCloudResults 
+                responses={currentResponses}
+              />
+            )}
+            
+            {currentQuestion.type === 'scale' && (
+              <ScaleResults 
+                question={currentQuestion}
+                responses={currentResponses}
+                totalParticipants={participants.length}
+              />
+            )}
+            
+            {currentQuestion.type === 'instruction' && (
+              <div className="instruction-display">
+                <p>This is an instruction slide. No responses needed.</p>
+              </div>
+            )}
+          </div>
         </div>
         
-        <div className="results-display">
-          <ResultsChart 
-            questionType={currentQuestion.type} 
-            responses={currentResponses}
-            options={currentQuestion.options}
-          />
+        <div className="presentation-sidebar">
+          <div className="response-metrics">
+            <div className="metric">
+              <span className="metric-label">Response Rate</span>
+              <span className="metric-value">{responseRate}%</span>
+            </div>
+            <div className="metric">
+              <span className="metric-label">Responses</span>
+              <span className="metric-value">{currentResponses.length}/{participants.length}</span>
+            </div>
+          </div>
+          
+          <div className="presentation-controls">
+            <button 
+              className={`control-btn ${showingQuestion ? 'active' : ''}`}
+              onClick={toggleShowQuestion}
+            >
+              {showingQuestion ? 'Hide Question' : 'Show Question'}
+            </button>
+            
+            {isQuizQuestion() && (
+              <button 
+                className={`control-btn ${showingAnswer ? 'active' : ''}`}
+                onClick={toggleShowAnswer}
+              >
+                {showingAnswer ? 'Hide Answer' : 'Show Answer'}
+              </button>
+            )}
+            
+            <button 
+              className="control-btn end-btn"
+              onClick={endPresentation}
+            >
+              End Presentation
+            </button>
+          </div>
         </div>
-        
-        <div className="qr-display">
-          <QRCode value={joinUrl} />
-          <div className="qr-label">Scan to join</div>
-        </div>
-      </div>
-      
-      <div className="presentation-controls">
-        <button 
-          onClick={previousQuestion}
-          disabled={currentQuestionIndex === 0}
-          className="btn-secondary"
-        >
-          Previous
-        </button>
-        
-        {!isActive ? (
-          <button 
-            onClick={startSurvey}
-            className="btn-primary start-button"
-          >
-            Start Survey
-          </button>
-        ) : (
-          <button 
-            onClick={endSurvey}
-            className="btn-danger end-button"
-          >
-            End Survey
-          </button>
-        )}
-        
-        <button 
-          onClick={nextQuestion}
-          disabled={currentQuestionIndex === survey.questions.length - 1}
-          className="btn-secondary"
-        >
-          Next
-        </button>
       </div>
     </div>
   );

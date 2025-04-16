@@ -1,179 +1,236 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect, useContext } from 'react';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import io from 'socket.io-client';
-import VotingCard from '../components/audience/VotingCard';
+import { SocketContext } from '../contexts/SocketContext';
 import '../styles/participant-view.css';
+
+// Question Components
+import MCQuestion from '../components/questions/MCQuestion';
+import ScaleQuestion from '../components/questions/ScaleQuestion';
+import WordCloudQuestion from '../components/questions/WordCloudQuestion';
+import InstructionSlide from '../components/questions/InstructionSlide';
+import QuizMCQuestion from '../components/questions/QuizMCQuestion';
 
 const ParticipantView = () => {
   const { code } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const socket = useContext(SocketContext);
+  
   const [survey, setSurvey] = useState(null);
-  const [socket, setSocket] = useState(null);
-  const [currentQuestion, setCurrentQuestion] = useState(null);
-  const [submitted, setSubmitted] = useState({});
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [surveyStatus, setSurveyStatus] = useState('waiting'); // waiting, active, ended
-  const nickname = localStorage.getItem('participantNickname') || 'Anonymous';
+  const [answers, setAnswers] = useState({});
+  const [showProgress, setShowProgress] = useState(true);
+  const [showAnswer, setShowAnswer] = useState(false);
+  const [feedback, setFeedback] = useState(null);
   
-  // Initialize socket and load survey
+  const participantId = location.state?.participantId;
+  const nickname = location.state?.nickname || 'Anonymous';
+
   useEffect(() => {
-    const loadSurvey = async () => {
+    const fetchSurvey = async () => {
       try {
-        // Get survey details
         const response = await axios.get(`http://localhost:3000/api/surveys/code/${code}`);
         setSurvey(response.data);
-        
-        // Connect to socket
-        const newSocket = io('http://localhost:3000');
-        setSocket(newSocket);
-        
-        // Join as participant
-        newSocket.emit('participantJoin', { 
-          surveyId: response.data._id, 
-          nickname 
-        });
-        
-        setLoading(false);
       } catch (err) {
-        setError('Survey not found or no longer active');
+        setError('Survey not found or has expired');
+      } finally {
         setLoading(false);
       }
     };
     
-    loadSurvey();
+    fetchSurvey();
     
-    return () => {
-      if (socket) {
-        socket.disconnect();
-      }
+    // Socket connection
+    if (socket) {
+      socket.emit('join-survey', { code, participantId, nickname });
+      
+      socket.on('question-change', (data) => {
+        setCurrentQuestionIndex(data.questionIndex);
+        setShowAnswer(false);
+        setFeedback(null);
+      });
+      
+      socket.on('show-answer', (data) => {
+        setShowAnswer(true);
+      });
+      
+      socket.on('hide-answer', () => {
+        setShowAnswer(false);
+      });
+      
+      socket.on('survey-end', () => {
+        navigate('/survey/complete', { 
+          state: { surveyTitle: survey?.title } 
+        });
+      });
+      
+      return () => {
+        socket.off('question-change');
+        socket.off('show-answer');
+        socket.off('hide-answer');
+        socket.off('survey-end');
+      };
+    }
+  }, [code, socket, participantId, nickname, navigate, survey?.title]);
+
+  const handleAnswerChange = (answer) => {
+    if (!survey) return;
+    
+    const question = survey.questions[currentQuestionIndex];
+    const questionId = question.id;
+    
+    const updatedAnswers = {
+      ...answers,
+      [questionId]: answer
     };
-  }, [code, nickname]);
-  
-  // Socket event listeners
-  useEffect(() => {
-    if (!socket || !survey) return;
     
-    socket.on('surveyStarted', () => {
-      setSurveyStatus('active');
-    });
+    setAnswers(updatedAnswers);
+    setFeedback(null);
     
-    socket.on('surveyEnded', () => {
-      setSurveyStatus('ended');
-    });
+    if (socket && participantId) {
+      socket.emit('submit-answer', {
+        surveyCode: code,
+        questionId,
+        answer,
+        participantId
+      });
+    }
     
-    socket.on('showQuestion', (data) => {
-      const question = survey.questions.find(q => q._id === data.questionId);
-      if (question) {
-        setCurrentQuestion(question);
+    // If it's a quiz question, check if answer is correct
+    if (question.type === 'quiz-mc' && showAnswer) {
+      const selectedOption = question.options.find(o => o.id === answer);
+      if (selectedOption) {
+        setFeedback({
+          isCorrect: selectedOption.isCorrect,
+          explanation: selectedOption.isCorrect 
+            ? (question.explanation || 'Correct!') 
+            : (question.explanation || 'That was not the correct answer.')
+        });
       }
-    });
-    
-    return () => {
-      socket.off('surveyStarted');
-      socket.off('surveyEnded');
-      socket.off('showQuestion');
-    };
-  }, [socket, survey]);
-  
-  const handleSubmitResponse = (questionId, response) => {
-    if (!socket || submitted[questionId]) return;
-    
-    socket.emit('submitResponse', {
-      surveyId: survey._id,
-      questionId,
-      response
-    });
-    
-    // Mark question as submitted
-    setSubmitted(prev => ({
-      ...prev,
-      [questionId]: true
-    }));
+    }
   };
-  
+
+  const handleNext = () => {
+    if (currentQuestionIndex < survey.questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setShowAnswer(false);
+      setFeedback(null);
+      
+      // Notify server about navigation
+      if (socket && participantId) {
+        socket.emit('participant-next', {
+          surveyCode: code,
+          participantId
+        });
+      }
+    } else {
+      // End of survey
+      navigate('/survey/complete', { 
+        state: { surveyTitle: survey?.title } 
+      });
+    }
+  };
+
+  const isQuizQuestion = (question) => {
+    return question?.type?.startsWith('quiz-');
+  };
+
+  const isAnswerSelected = () => {
+    if (!survey) return false;
+    
+    const question = survey.questions[currentQuestionIndex];
+    const questionId = question.id;
+    const answer = answers[questionId];
+    
+    if (question.type === 'multiple-choice' && question.allowMultiple) {
+      return Array.isArray(answer) && answer.length > 0;
+    }
+    
+    return answer !== undefined && answer !== '';
+  };
+
   if (loading) {
-    return <div className="loading">Joining survey...</div>;
+    return <div className="loading">Loading survey...</div>;
   }
-  
+
   if (error) {
-    return <div className="error">{error}</div>;
+    return <div className="error-container">{error}</div>;
   }
-  
-  if (!survey) {
-    return <div className="error">Survey not found</div>;
+
+  if (!survey || survey.questions.length === 0) {
+    return <div className="error-container">No questions found in this survey.</div>;
   }
-  
+
+  const currentQuestion = survey.questions[currentQuestionIndex];
+  const totalQuestions = survey.questions.length;
+  const progress = `${currentQuestionIndex + 1}/${totalQuestions}`;
+
   return (
-    <div className="participant-container">
+    <div className="participant-view">
       <div className="participant-header">
         <h1>{survey.title}</h1>
-        <div className="participant-info">
-          <span>Joined as: {nickname}</span>
-        </div>
+        {showProgress && (
+          <div className="question-progress">{progress}</div>
+        )}
       </div>
       
-      {surveyStatus === 'waiting' && (
-        <div className="waiting-screen">
-          <h2>Waiting for presenter to start...</h2>
-          <div className="pulse-animation"></div>
-        </div>
-      )}
+      <div className="question-container">
+        {currentQuestion.type === 'multiple-choice' && (
+          <MCQuestion
+            question={currentQuestion}
+            answer={answers[currentQuestion.id] || (currentQuestion.allowMultiple ? [] : '')}
+            onAnswerChange={handleAnswerChange}
+            showResults={false}
+          />
+        )}
+        
+        {currentQuestion.type === 'quiz-mc' && (
+          <QuizMCQuestion
+            question={currentQuestion}
+            answer={answers[currentQuestion.id] || ''}
+            onAnswerChange={handleAnswerChange}
+            showAnswer={showAnswer}
+            feedback={feedback}
+          />
+        )}
+        
+        {currentQuestion.type === 'word-cloud' && (
+          <WordCloudQuestion
+            question={currentQuestion}
+            answer={answers[currentQuestion.id] || ''}
+            onAnswerChange={handleAnswerChange}
+          />
+        )}
+        
+        {currentQuestion.type === 'scale' && (
+          <ScaleQuestion
+            question={currentQuestion}
+            answer={answers[currentQuestion.id] || ''}
+            onAnswerChange={handleAnswerChange}
+            showResults={false}
+          />
+        )}
+        
+        {currentQuestion.type === 'instruction' && (
+          <InstructionSlide
+            content={currentQuestion}
+            onContinue={handleNext}
+          />
+        )}
+      </div>
       
-      {surveyStatus === 'active' && currentQuestion && (
-        <div className="question-screen">
-          {submitted[currentQuestion._id] ? (
-            <div className="submitted-message">
-              <h2>Response submitted!</h2>
-              <p>Waiting for next question...</p>
-            </div>
-          ) : (
-            <>
-              {currentQuestion.type === 'multiple-choice' && (
-                <VotingCard 
-                  poll={{
-                    question: currentQuestion.text,
-                    options: currentQuestion.options.map(opt => ({
-                      id: opt.value,
-                      text: opt.text
-                    })),
-                    roomCode: code
-                  }}
-                  onVote={(optionId) => handleSubmitResponse(currentQuestion._id, optionId)}
-                />
-              )}
-              
-              {currentQuestion.type === 'open-ended' && (
-                <div className="text-response">
-                  <h2>{currentQuestion.text}</h2>
-                  <textarea 
-                    placeholder="Type your response here..."
-                    maxLength="200"
-                    rows="4"
-                    id="responseText"
-                  ></textarea>
-                  <button 
-                    onClick={() => {
-                      const text = document.getElementById('responseText').value;
-                      if (text.trim()) {
-                        handleSubmitResponse(currentQuestion._id, text);
-                      }
-                    }}
-                    className="submit-button"
-                  >
-                    Submit
-                  </button>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      )}
-      
-      {surveyStatus === 'ended' && (
-        <div className="ended-screen">
-          <h2>Survey has ended</h2>
-          <p>Thank you for your participation!</p>
+      {currentQuestion.type !== 'instruction' && (
+        <div className="question-actions">
+          <button 
+            className="btn-next"
+            onClick={handleNext}
+            disabled={currentQuestion.required && !isAnswerSelected()}
+          >
+            {currentQuestionIndex < totalQuestions - 1 ? 'Next' : 'Finish'}
+          </button>
         </div>
       )}
     </div>

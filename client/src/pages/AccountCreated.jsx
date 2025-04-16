@@ -1,37 +1,33 @@
-import React from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import "../styles/account-created.css";
+import React from 'react';
+import { Link } from 'react-router-dom';
+import Navbar from '../components/common/Navbar';
+import '../styles/account-created.css';
 
 const AccountCreated = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const username = location.state?.username || "User";
-  
-  const handleLogin = () => {
-    navigate('/login');
-  };
-  
   return (
-    <div className="account-created">
-      <div className="overlap">
-        <div className="text-wrapper"></div>
-      </div>
-
-      <p className="QUIZLET">
-        <span className="span">Q</span>
-        <span className="text-wrapper-2">UIZLET</span>
-      </p>
-
-      <div className="frame">
-        <div className="success-icon">✓</div>
-        <h1 className="success-title">Account Created!</h1>
-        <p className="welcome-text">
-          Welcome, <span className="username">{username}</span>! 
-          Your account has been successfully created.
-        </p>
-        
-        <div className="login-button" onClick={handleLogin}>
-          <div className="button-text">Go to Login</div>
+    <div className="page-container">
+      <Navbar />
+      
+      <div className="account-created-container">
+        <div className="success-card">
+          <div className="success-icon">
+            <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="32" cy="32" r="32" fill="#4ADE80"/>
+              <path d="M20 32L28 40L44 24" stroke="white" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          
+          <h1>Account Created!</h1>
+          <p>Your account has been successfully created. You can now create and manage your surveys.</p>
+          
+          <div className="action-buttons">
+            <Link to="/dashboard" className="btn-primary">
+              Go to Dashboard
+            </Link>
+            <Link to="/create" className="btn-secondary">
+              Create Your First Survey
+            </Link>
+          </div>
         </div>
       </div>
     </div>
