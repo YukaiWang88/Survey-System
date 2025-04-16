@@ -67,6 +67,26 @@ npm install
 
 ## 🚀 Running the Application
 
+### Docker Setup
+
+If you have Docker installed, you can run the application using Docker Compose. This will set up the backend server, MongoDB, and frontend client in separate containers. The `docker-compose.yml` file is already configured for you.
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/Survey-System.git
+cd Survey-System
+
+# Start all services (client, server, MongoDB)
+docker-compose up
+```
+
+This will:
+
+1. build the client container from the Dockerfile in the `client` directory
+2. build the server container from the Dockerfile in the `server` directory
+3. start the MongoDB container
+4. link all three services together
+
 ### Start the backend server
 ```bash
 cd server
@@ -77,6 +97,11 @@ npm run dev
 ```bash
 cd client
 npm start
+```
+
+### Start the Mongodb server
+```bash
+brew services start mongodb-community
 ```
 
 The application will be available at http://localhost:3001
