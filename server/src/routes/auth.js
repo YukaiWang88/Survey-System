@@ -8,84 +8,54 @@ const User = require('../models/User');
 // Update your register route
 router.post('/register', async (req, res) => {
   try {
+    // Log incoming request for debugging
+    console.log('Registration request received:', {
+      name: req.body.name,
+      email: req.body.email,
+      hasPassword: Boolean(req.body.password)
+    });
+    
     const { name, email, password } = req.body;
     
-    // Use mock DB if MongoDB is not available
-    if (usesMockDB()) {
-      console.log('Using mock DB for registration');
-      
-      // Check if user exists
-      const existingUser = global.mockDB.users.find(u => u.email === email);
-      if (existingUser) {
-        return res.status(400).json({ message: "User already exists" });
-      }
-      
-      // Create mock user with ID
-      const mockUser = {
-        _id: Date.now().toString(),
-        name,
-        email,
-        password: `hashed_${password}`, // Simulate hashed password
-        createdAt: new Date()
-      };
-      
-      global.mockDB.users.push(mockUser);
-      console.log('Created mock user:', mockUser);
-      
-      // Generate JWT token
-      const token = jwt.sign(
-        { userId: mockUser._id },
-        process.env.JWT_SECRET || '665eced222ba5d45aa7e3774cc8d30bb4fc122be7ef6c9e6ec31996bdd78e184a00460c1ab1436c615016dcfc4ece66d3f581fc41c7380adf154a850149ab7c7',
-        { expiresIn: '7d' }
-      );
-      
-      return res.status(201).json({
-        token,
-        user: {
-          id: mockUser._id,
-          name: mockUser.name,
-          email: mockUser.email
-        }
-      });
+    // Validate inputs
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: 'Please provide all required fields' });
     }
     
-    // Regular MongoDB flow
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+    // Check if user already exists
+    let user = await User.findOne({ email });
+    if (user) {
+      return res.status(400).json({ message: 'User already exists with this email' });
     }
-    
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
     
     // Create new user
-    const user = new User({
-      name,
-      email,
-      password: hashedPassword
-    });
+    user = new User({ name, email, password });
+    
+    // Hash password before saving
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(password, salt);
     
     await user.save();
     
     // Create JWT token
     const token = jwt.sign(
-      { userId: user._id },
+      { userId: user.id },
       process.env.JWT_SECRET || '665eced222ba5d45aa7e3774cc8d30bb4fc122be7ef6c9e6ec31996bdd78e184a00460c1ab1436c615016dcfc4ece66d3f581fc41c7380adf154a850149ab7c7',
       { expiresIn: '7d' }
     );
     
-    res.status(201).json({
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email
-      }
-    });
+    // Return success with token and user data (excluding password)
+    const userResponse = {
+      id: user.id,
+      name: user.name,
+      email: user.email
+    };
+    
+    console.log('User registered successfully:', userResponse);
+    res.status(201).json({ token, user: userResponse });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
+    console.error('Registration error on server:', err);
+    res.status(500).json({ message: 'Server error during registration' });
   }
 });
 

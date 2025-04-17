@@ -2,7 +2,7 @@ const express = require('express');
 const http = require('http');
 const cors = require('cors');
 const surveyRoutes = require('./routes/surveyRoutes');
-// Comment out mongoose until we need it
+const authRoutes = require('./routes/auth');  // Add this line
 const mongoose = require('mongoose');
 const socketIo = require('socket.io');
 
@@ -17,10 +17,14 @@ const io = socketIo(server, {
 });
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:3001', 'http://localhost:3002'], 
+  credentials: true
+}));
+
 app.use(express.json());
 
-// MongoDB connection for now
+// MongoDB connection
 const MONGO_URI = 'mongodb+srv://kwokhinchi:comp3421@surveysystemcluster.zbzscfk.mongodb.net/survey-system?retryWrites=true&w=majority';
 mongoose.connect(MONGO_URI)
   .then(() => console.log('MongoDB connected'))
@@ -29,8 +33,7 @@ mongoose.connect(MONGO_URI)
     console.log('Continuing without database for development...');
   });
 
-
-// Simple socket setup for now
+// Socket setup
 io.on('connection', (socket) => {
   console.log('New client connected:', socket.id);
   
@@ -45,6 +48,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // API Routes
+app.use('/api/auth', authRoutes);  // Add this line for auth routes
 app.use('/api/surveys', surveyRoutes);
 
 // Start the server
