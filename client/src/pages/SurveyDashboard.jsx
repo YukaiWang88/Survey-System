@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import API from '../utils/api';
 import { AuthContext } from '../contexts/AuthContext';
 import { 
   Container, Tabs, Tab, Card, Row, Col, Badge, Button, 
@@ -41,7 +42,7 @@ const SurveyDashboard = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('authToken');
-      const response = await axios.get('http://localhost:3000/api/surveys', {
+      const response = await API.get('/surveys', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCreatedSurveys(response.data);
@@ -57,7 +58,7 @@ const SurveyDashboard = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('authToken');
-      const response = await axios.get('http://localhost:3000/api/surveys/joined', {
+      const response = await API.get('/surveys/joined', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setJoinedSurveys(response.data);
@@ -72,7 +73,7 @@ const SurveyDashboard = () => {
   const fetchSurveyStats = async (surveyId) => {
     try {
       const token = localStorage.getItem('authToken');
-      const response = await axios.get(`http://localhost:3000/api/surveys/${surveyId}/stats`, {
+      const response = await API.get(`/surveys/${surveyId}/stats`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSurveyStats(response.data);
@@ -85,7 +86,7 @@ const SurveyDashboard = () => {
   const closeSurvey = async (surveyId) => {
     try {
       const token = localStorage.getItem('authToken');
-      await axios.patch(`http://localhost:3000/api/surveys/${surveyId}/close`, {}, {
+      await API.patch(`/surveys/${surveyId}/close`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       // Update local state

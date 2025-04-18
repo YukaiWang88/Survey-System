@@ -4,6 +4,7 @@ import axios from 'axios';
 import { AuthContext } from '../contexts/AuthContext';
 import Navbar from '../components/common/Navbar';
 import SurveyCard from '../components/common/SurveyCard';
+import API from '../utils/api';
 import '../styles/dashboard.css';
 
 const Dashboard = () => {
@@ -26,7 +27,7 @@ const Dashboard = () => {
         const token = localStorage.getItem('authToken');
         console.log('Fetching surveys with token:', token ? 'Token exists' : 'No token');
         
-        const response = await axios.get('http://localhost:3000/api/surveys', {
+        const response = await API.get('/surveys', {
           headers: { Authorization: `Bearer ${token}` }
         });
         
@@ -62,7 +63,7 @@ const Dashboard = () => {
     
     try {
       const token = localStorage.getItem('authToken');
-      await axios.delete(`http://localhost:3000/api/surveys/${surveyId}`, {
+      await API.delete(`/surveys/${surveyId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -78,8 +79,8 @@ const Dashboard = () => {
   const handleActivateSurvey = async (surveyId) => {
     try {
       const token = localStorage.getItem('authToken');
-      const response = await axios.patch(
-        `/api/surveys/${surveyId}/activate`,
+      const response = await API.patch(
+        `/surveys/${surveyId}/activate`,
         {},
         { headers: { Authorization: `Bearer ${token}` }}
       );

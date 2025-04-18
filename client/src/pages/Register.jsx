@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import API from '../utils/api';
 import { AuthContext } from '../contexts/AuthContext';
 import Navbar from '../components/common/Navbar';
 import '../styles/auth.css';
@@ -33,7 +34,7 @@ const Register = () => {
       
       console.log("Attempting to register with:", { name, email });
       
-      const response = await axios.post('http://localhost:3000/api/auth/register', {
+      const response = await API.post('/auth/register', {
         name,
         email,
         password

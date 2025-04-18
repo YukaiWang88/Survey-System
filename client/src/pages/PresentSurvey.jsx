@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import API from '../utils/api';
 import { SocketContext } from '../contexts/SocketContext';
 import { AuthContext } from '../contexts/AuthContext';
 import Navbar from '../components/common/Navbar';
@@ -35,7 +36,7 @@ const PresentSurvey = () => {
     const fetchSurvey = async () => {
     try {
       const token = localStorage.getItem('authToken');
-      const response = await axios.get(`http://localhost:3000/api/surveys/${surveyId}`, {
+      const response = await API.get(`/surveys/${surveyId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -46,8 +47,8 @@ const PresentSurvey = () => {
       setSurvey(response.data);
       
       // Get or generate survey code
-      const codeResponse = await axios.post(
-        `http://localhost:3000/api/surveys/${surveyId}/generate-code`,
+      const codeResponse = await API.post(
+        `/surveys/${surveyId}/generate-code`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
