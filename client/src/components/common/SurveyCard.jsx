@@ -1,7 +1,7 @@
 import React from 'react';
-import { FaPlay, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaPlay, FaEdit, FaTrash, FaToggleOn } from 'react-icons/fa';
 
-const SurveyCard = ({ survey, onPresent, onEdit, onDelete }) => {
+const SurveyCard = ({ survey, onPresent, onEdit, onDelete, onActivate }) => {
   // Format the date nicely
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -27,6 +27,11 @@ const SurveyCard = ({ survey, onPresent, onEdit, onDelete }) => {
           </div>
           <div className="survey-date">
             {formatDate(survey.createdAt)}
+          </div>
+          <div className="survey-status">
+            Status: <span className={survey.isActive ? "status-active" : "status-inactive"}>
+              {survey.isActive ? 'Active' : 'Inactive'}
+            </span>
           </div>
         </div>
         
@@ -54,6 +59,17 @@ const SurveyCard = ({ survey, onPresent, onEdit, onDelete }) => {
           >
             <FaTrash style={{marginRight: '4px'}} /> Delete
           </button>
+          
+          {/* Add activation button if survey is not active */}
+          {!survey.isActive && (
+            <button 
+              className="btn-activate" 
+              onClick={onActivate}
+              aria-label="Activate survey"
+            >
+              <FaToggleOn style={{marginRight: '4px'}} /> Activate
+            </button>
+          )}
         </div>
       </div>
     </div>

@@ -1,33 +1,75 @@
 const express = require('express');
 const router = express.Router();
+const Survey = require('../models/Survey');
 
-// Test route to verify router works
-router.get('/', (req, res) => {
-  res.json({ message: 'Join router working!' });
-});
-
-// Main join route
-router.post('/', (req, res) => {
+// Join a survey by code
+router.post('/', async (req, res) => {
   try {
     const { code, nickname } = req.body;
     
-    if (!code) {
-      return res.status(400).json({ message: 'Survey code is required' });
+    console.log(`Join attempt: code=${code}, nickname=${nickname}`);
+    
+    if (!code || !nickname) {
+      return res.status(400).json({ message: 'Survey code and nickname are required' });
+    }
+
+    // Find the survey by code (case insensitive)
+    const survey = await Survey.findOne({ 
+      code: new RegExp(`^${code}$`, 'i')
+    });
+    
+    if (!survey) {
+      console.log(`Survey not found with code: ${code}`);
+      return res.status(404).json({ message: 'Survey not found' });
     }
     
-    console.log('Join request received:', { code, nickname });
+    // Make the survey active if it's not already
+    if (!survey.isActive) {
+      survey.isActive = true;
+      await survey.save();
+      console.log(`Activated survey: ${survey.title} (${code})`);
+    }
     
-    // Mock data for testing
-    const surveyId = `survey-${Date.now()}`;
-    const participantId = `participant-${Date.now()}`;
+    // Generate participant token
+    const participantId = Date.now().toString();
     
+    // Return success response
     res.json({
-      surveyId,
+      surveyId: survey._id,
+      code: survey.code,
+      title: survey.title,
       participantId,
-      message: 'Successfully joined survey'
+      nickname
     });
+    
   } catch (err) {
-    console.error('Join error:', err);
+    console.error('Join survey error:', err);
+    res.status(500).json({ message: 'Server error while joining survey' });
+  }
+});
+
+// Verify a survey exists before joining
+router.get('/verify/:code', async (req, res) => {
+  try {
+    const { code } = req.params;
+    
+    // Find survey by code (case insensitive)
+    const survey = await Survey.findOne({ 
+      code: new RegExp(`^${code}$`, 'i')
+    });
+    
+    if (!survey) {
+      return res.status(404).json({ exists: false });
+    }
+    
+    res.json({ 
+      exists: true, 
+      title: survey.title,
+      isActive: survey.isActive 
+    });
+    
+  } catch (err) {
+    console.error('Verify survey error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });

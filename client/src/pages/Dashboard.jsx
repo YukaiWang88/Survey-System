@@ -74,6 +74,31 @@ const Dashboard = () => {
     }
   };
   
+  // Add the new handleActivateSurvey function
+  const handleActivateSurvey = async (surveyId) => {
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await axios.patch(
+        `/api/surveys/${surveyId}/activate`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      
+      // Update the surveys state to show the survey is now active
+      setSurveys(surveys.map(survey => 
+        survey._id === surveyId 
+          ? { ...survey, isActive: true } 
+          : survey
+      ));
+      
+      // Show success message
+      alert(`Survey activated! Code: ${response.data.survey.code}`);
+    } catch (error) {
+      console.error('Error activating survey:', error);
+      setError('Failed to activate survey');
+    }
+  };
+  
   if (loading) {
     return (
       <>
@@ -118,6 +143,7 @@ const Dashboard = () => {
                 onPresent={() => handlePresentSurvey(survey._id)}
                 onEdit={() => handleEditSurvey(survey._id)}
                 onDelete={() => handleDeleteSurvey(survey._id)}
+                onActivate={() => handleActivateSurvey(survey._id)}
               />
             ))}
           </div>

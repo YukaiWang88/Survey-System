@@ -29,7 +29,7 @@ const auth = async (req, res, next) => {
 router.use(auth);
 
 // CREATE - Create a new survey
-router.post('/', auth, async (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const { title, description, questions } = req.body;
     
@@ -298,6 +298,26 @@ router.get('/:id/stats', auth, async (req, res) => {
     });
   } catch (err) {
     console.error('Error fetching survey statistics:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Activate a survey
+router.patch('/:id/activate', auth, async (req, res) => {
+  try {
+    const survey = await Survey.findOneAndUpdate(
+      { _id: req.params.id, creator: req.user._id },
+      { isActive: true },
+      { new: true }
+    );
+    
+    if (!survey) {
+      return res.status(404).json({ message: 'Survey not found' });
+    }
+    
+    res.json({ message: 'Survey activated successfully', survey });
+  } catch (err) {
+    console.error('Error activating survey:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
