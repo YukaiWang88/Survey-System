@@ -29,29 +29,42 @@ const auth = async (req, res, next) => {
 router.use(auth);
 
 // CREATE - Create a new survey
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
   try {
     const { title, description, questions } = req.body;
     
-    // Create a new survey using the MongoDB model
-    const newSurvey = new Survey({
+    // Validate and fix questions data
+    const validatedQuestions = questions.map((question, index) => {
+      // If there's a title or questionText but no text, use one of those
+      if (!question.text) {
+        if (question.questionText) {
+          question.text = question.questionText;
+        } else if (question.title) {
+          question.text = question.title;
+        } else {
+          throw new Error(`Question ${index + 1} is missing required text field`);
+        }
+      }
+      
+      return question;
+    });
+    
+    const survey = new Survey({
       title,
       description,
-      questions,
+      questions: validatedQuestions,
       creator: req.user._id,
       code: Math.random().toString(36).substring(2, 8).toUpperCase()
     });
     
-    // Save to MongoDB
-    await newSurvey.save();
-    
-    res.status(201).json({ 
-      message: 'Survey created successfully', 
-      survey: newSurvey
-    });
+    await survey.save();
+    res.status(201).json(survey);
   } catch (err) {
     console.error('Create survey error:', err);
-    res.status(500).json({ message: 'Server error' });
+    res.status(400).json({ 
+      message: 'Error creating survey', 
+      error: err.message 
+    });
   }
 });
 
