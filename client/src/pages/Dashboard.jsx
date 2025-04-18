@@ -24,13 +24,17 @@ const Dashboard = () => {
     const fetchSurveys = async () => {
       try {
         const token = localStorage.getItem('authToken');
+        console.log('Fetching surveys with token:', token ? 'Token exists' : 'No token');
+        
         const response = await axios.get('http://localhost:3000/api/surveys', {
           headers: { Authorization: `Bearer ${token}` }
         });
+        
+        console.log('Surveys fetched:', response.data);
         setSurveys(response.data);
       } catch (err) {
-        setError('Failed to fetch surveys');
-        console.error(err);
+        console.error('Survey fetch error details:', err.response?.data || err.message);
+        setError(`Failed to fetch surveys: ${err.response?.data?.message || err.message}`);
       } finally {
         setLoading(false);
       }
