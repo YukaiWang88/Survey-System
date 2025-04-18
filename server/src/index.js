@@ -25,14 +25,30 @@ app.use(cors({
 app.use(express.json());
 
 // MongoDB connection
-const MONGO_URI = 'mongodb+srv://kwokhinchi:comp3421@surveysystemcluster.zbzscfk.mongodb.net/survey-system?retryWrites=true&w=majority';
-mongoose.connect(MONGO_URI)
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => {
-    console.error('MongoDB connection error:', err);
-    console.log('Continuing without database for development...');
-  });
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/survey-system';
 
+mongoose.connect(MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  connectTimeoutMS: 30000, // Increased timeout
+  socketTimeoutMS: 30000
+})
+.then(() => {
+  console.log('MongoDB connected successfully');
+})
+.catch(err => {
+  console.error('MongoDB connection error:', err);
+  console.log('Setting up mock database for development...');
+  
+  // Setup mock database if connection fails
+  global.mockDB = {
+    users: [],
+    surveys: [],
+    responses: [],
+    participants: []
+  };
+});
+  
 // Socket setup
 io.on('connection', (socket) => {
   console.log('New client connected:', socket.id);

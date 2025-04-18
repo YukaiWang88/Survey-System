@@ -2,22 +2,27 @@ const mongoose = require('mongoose');
 
 const OptionSchema = new mongoose.Schema({
   text: { type: String, required: true },
-  value: { type: String, required: true }
-});
+  value: { type: String, required: false }
+}, { _id: false, strict: false });
 
 const QuestionSchema = new mongoose.Schema({
   type: { 
     type: String, 
     required: true,
-    enum: ['multiple-choice', 'open-ended', 'scale', 'word-cloud']
+    // Add ALL possible types your frontend might send
+    enum: ['multiple-choice', 'open-ended', 'scale', 'word-cloud', 
+           'instruction', 'mc', 'text', 'number', 'checkbox', 'rating',
+           'wordcloud', 'quiz-mc']
   },
   text: { type: String, required: true },
+  questionText: { type: String },
+  title: { type: String }, // Add this field
   options: [OptionSchema],
   settings: {
-    allowMultiple: { type: Boolean, default: false },
-    timer: { type: Number, default: 0 }
+    type: mongoose.Schema.Types.Mixed, // Allow any settings
+    default: {}
   }
-});
+}, { _id: false, strict: false });
 
 const SurveySchema = new mongoose.Schema({
   title: { type: String, required: true },
@@ -36,12 +41,11 @@ const SurveySchema = new mongoose.Schema({
   isActive: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
-});
+}, { strict: false });
 
-// Auto-generate survey code when creating a new survey
+// Keep your existing auto-generate code hook
 SurveySchema.pre('save', function(next) {
   if (this.isNew && !this.code) {
-    // Generate a random 6-character code
     this.code = Math.random().toString(36).substring(2, 8).toUpperCase();
   }
   next();

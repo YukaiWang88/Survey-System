@@ -1,29 +1,33 @@
 const mongoose = require('mongoose');
 
 const ResponseSchema = new mongoose.Schema({
-  surveyId: {
+  survey: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Survey',
     required: true
   },
-  questionId: {
+  user: {
     type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
     required: true
   },
-  response: {
-    type: mongoose.Schema.Types.Mixed,
-    required: true
+  answers: [{
+    questionId: String,
+    answer: mongoose.Schema.Types.Mixed // Can store any type of answer
+  }],
+  completed: {
+    type: Boolean,
+    default: false
   },
-  participant: {
-    nickname: {
-      type: String,
-      required: true
-    }
+  progress: {
+    type: Number,
+    default: 0
   },
-  timestamp: {
+  startedAt: {
     type: Date,
     default: Date.now
-  }
+  },
+  completedAt: Date
 });
 
 module.exports = mongoose.model('Response', ResponseSchema);
