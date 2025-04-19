@@ -30,7 +30,7 @@ function App() {
             <Route path="/account-created" element={<AccountCreated />} />
             <Route path="/join" element={<SurveyLanding />} />
             <Route path="/join/code" element={<JoinSurveyForm />} />
-            <Route path="/survey/:code" element={<ParticipantView />} />
+            <Route path="/survey/:surveyId" element={<ParticipantView />} />
             
             {/* Protected routes */}
             <Route path="/dashboard" element={

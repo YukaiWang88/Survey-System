@@ -51,4 +51,6 @@ SurveySchema.pre('save', function(next) {
   next();
 });
 
-module.exports = mongoose.model('Survey', SurveySchema);
+const Survey = mongoose.model('Survey', SurveySchema);
+
+module.exports = Survey;

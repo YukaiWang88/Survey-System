@@ -3,8 +3,10 @@ const http = require('http');
 const cors = require('cors');
 const surveyRoutes = require('./routes/surveyRoutes');
 const authRoutes = require('./routes/auth');  // Add this line
+const joinRoutes = require('./routes/join'); 
 const mongoose = require('mongoose');
 const socketIo = require('socket.io');
+const { join } = require('path');
 
 // Initialize Express app
 const app = express();
@@ -66,6 +68,8 @@ app.get('/api/health', (req, res) => {
 // API Routes
 app.use('/api/auth', authRoutes);  // Add this line for auth routes
 app.use('/api/surveys', surveyRoutes);
+app.use('/api/join', joinRoutes);
+
 
 // Start the server
 const PORT = process.env.PORT || 3000;

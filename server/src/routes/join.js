@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const Survey = require('../models/Survey');
 
 // Test route to verify router works
 router.get('/', (req, res) => {
@@ -7,7 +8,7 @@ router.get('/', (req, res) => {
 });
 
 // Main join route
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const { code, nickname } = req.body;
     
@@ -15,16 +16,20 @@ router.post('/', (req, res) => {
       return res.status(400).json({ message: 'Survey code is required' });
     }
     
-    console.log('Join request received:', { code, nickname });
-    
-    // Mock data for testing
-    const surveyId = `survey-${Date.now()}`;
+    // randomly create a user id
     const participantId = `participant-${Date.now()}`;
+    let survey = await Survey.findOne({ code: code });
+    if (!survey) {
+      return res.status(400).json({ message: "Survey Not Found" });
+    }
     
+    let surveyId = survey._id;
+
     res.json({
       surveyId,
       participantId,
-      message: 'Successfully joined survey'
+      nickname,
+      message: 'Successfully joined survey',
     });
   } catch (err) {
     console.error('Join error:', err);

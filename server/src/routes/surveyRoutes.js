@@ -322,4 +322,25 @@ router.patch('/:id/close', auth, async (req, res) => {
   }
 });
 
+
+// get a survey by code
+router.get('/code/:surveyId', async (req, res) => {
+  try {
+    const { surveyId } = req.params;
+    console.log(`in get ${surveyId}`);
+    const survey = await Survey.findOne({ _id: surveyId });
+
+    if (!survey) {
+      return res.status(404).json({ message: 'Survey not found' });
+    }
+
+    console.log(survey)
+
+    res.json(survey);
+  } catch (err) {
+    console.error('Join error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;

@@ -12,7 +12,7 @@ import InstructionSlide from '../components/questions/InstructionSlide';
 import QuizMCQuestion from '../components/questions/QuizMCQuestion';
 
 const ParticipantView = () => {
-  const { code } = useParams();
+  const { surveyId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const socket = useContext(SocketContext);
@@ -32,7 +32,7 @@ const ParticipantView = () => {
   useEffect(() => {
     const fetchSurvey = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/api/surveys/code/${code}`);
+        const response = await axios.get(`http://localhost:3000/api/surveys/code/${surveyId}`);
         setSurvey(response.data);
       } catch (err) {
         setError('Survey not found or has expired');
@@ -45,7 +45,7 @@ const ParticipantView = () => {
     
     // Socket connection
     if (socket) {
-      socket.emit('join-survey', { code, participantId, nickname });
+      socket.emit('join-survey', { surveyId, participantId, nickname });
       
       socket.on('question-change', (data) => {
         setCurrentQuestionIndex(data.questionIndex);
@@ -74,7 +74,7 @@ const ParticipantView = () => {
         socket.off('survey-end');
       };
     }
-  }, [code, socket, participantId, nickname, navigate, survey?.title]);
+  }, [surveyId, socket, participantId, nickname, navigate, survey?.title]);
 
   const handleAnswerChange = (answer) => {
     if (!survey) return;
@@ -92,7 +92,7 @@ const ParticipantView = () => {
     
     if (socket && participantId) {
       socket.emit('submit-answer', {
-        surveyCode: code,
+        surveyId,
         questionId,
         answer,
         participantId
@@ -122,7 +122,7 @@ const ParticipantView = () => {
       // Notify server about navigation
       if (socket && participantId) {
         socket.emit('participant-next', {
-          surveyCode: code,
+          surveyId,
           participantId
         });
       }
