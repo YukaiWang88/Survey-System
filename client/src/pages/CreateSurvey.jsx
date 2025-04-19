@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
+import API from '../utils/api';
 import Navbar from '../components/common/Navbar';
 import MCQuestionEditor from '../components/survey/MCQuestionEditor';
 import WordCloudEditor from '../components/survey/WordCloudEditor';
@@ -24,7 +25,7 @@ const CreateSurvey = ({ isEditing = false }) => {
       const fetchSurvey = async () => {
         try {
           const token = localStorage.getItem('authToken');
-          const response = await axios.get(`http://localhost:3000/api/surveys/${id}`, {
+          const response = await API.get(`/surveys/${id}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           
@@ -172,12 +173,12 @@ const CreateSurvey = ({ isEditing = false }) => {
       };
       
       if (isEditing) {
-        await axios.put(`http://localhost:3000/api/surveys/${id}`, survey, {
+        await API.put(`/surveys/${id}`, survey, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setSuccess('Survey updated successfully!');
       } else {
-        await axios.post('http://localhost:3000/api/surveys', survey, {
+        await API.post('/surveys', survey, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setSuccess('Survey created successfully!');

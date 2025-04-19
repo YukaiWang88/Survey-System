@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
+import API from '../utils/api';
 import { 
   Container, Row, Col, Card, Table, Spinner, Alert, 
   Tabs, Tab, Badge, Button, ProgressBar, Dropdown
@@ -42,14 +43,14 @@ const SurveyStatistics = () => {
       const token = localStorage.getItem('authToken');
       
       // Fetch survey details
-      const surveyResponse = await axios.get(`http://localhost:3000/api/surveys/${id}`, {
+      const surveyResponse = await API.get(`/surveys/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
       setSurvey(surveyResponse.data);
       
       // Fetch survey responses
-      const responsesResponse = await axios.get(`http://localhost:3000/api/surveys/${id}/responses`, {
+      const responsesResponse = await API.get(`/surveys/${id}/responses`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       

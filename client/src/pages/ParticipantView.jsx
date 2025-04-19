@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import API from '../utils/api';
 import { SocketContext } from '../contexts/SocketContext';
 import '../styles/participant-view.css';
 
@@ -32,7 +33,7 @@ const ParticipantView = () => {
   useEffect(() => {
     const fetchSurvey = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/api/surveys/code/${surveyId}`);
+        const response = await API.get(`/surveys/code/${code}`);
         setSurvey(response.data);
       } catch (err) {
         setError('Survey not found or has expired');

@@ -9,6 +9,7 @@ import PresentSurvey from './pages/PresentSurvey';
 import SurveyLanding from './pages/SurveyLanding';
 import JoinSurveyForm from './pages/JoinSurveyForm';
 import ParticipantView from './pages/ParticipantView';
+import ParticipateSurvey from './pages/ParticipateSurvey';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Logout from './pages/Logout';
