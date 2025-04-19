@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import API from '../utils/api';
 import { useNavigate } from 'react-router-dom';
 import '../styles/join-survey.css';
 import Navbar from '../components/common/Navbar';
@@ -23,7 +24,7 @@ const JoinSurveyForm = () => {
     }
     
     try {
-      const response = await axios.post('http://localhost:3000/api/join', {
+      const response = await API.post('/join', {
         code,
         nickname
       });

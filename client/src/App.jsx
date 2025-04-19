@@ -9,6 +9,7 @@ import PresentSurvey from './pages/PresentSurvey';
 import SurveyLanding from './pages/SurveyLanding';
 import JoinSurveyForm from './pages/JoinSurveyForm';
 import ParticipantView from './pages/ParticipantView';
+import ParticipateSurvey from './pages/ParticipateSurvey';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Logout from './pages/Logout';
@@ -31,6 +32,7 @@ function App() {
             <Route path="/join" element={<SurveyLanding />} />
             <Route path="/join/code" element={<JoinSurveyForm />} />
             <Route path="/survey/:code" element={<ParticipantView />} />
+            <Route path="/survey/:id" element={<ParticipateSurvey />} />
             
             {/* Protected routes */}
             <Route path="/dashboard" element={

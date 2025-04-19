@@ -14,9 +14,7 @@ router.post('/', async (req, res) => {
     }
 
     // Find the survey by code (case insensitive)
-    const survey = await Survey.findOne({ 
-      code: new RegExp(`^${code}$`, 'i')
-    });
+    const survey = await Survey.findOne({ code: new RegExp(`^${code}$`, 'i') });
     
     if (!survey) {
       console.log(`Survey not found with code: ${code}`);
@@ -70,6 +68,45 @@ router.get('/verify/:code', async (req, res) => {
     
   } catch (err) {
     console.error('Verify survey error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get survey details for a participant
+router.get('/survey/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log(`Participant requesting survey with ID: ${id}`);
+    
+    // Find survey by ID
+    const survey = await Survey.findById(id);
+    
+    if (!survey) {
+      console.log(`Survey not found with ID: ${id}`);
+      return res.status(404).json({ message: 'Survey not found' });
+    }
+    
+    console.log(`Found survey: ${survey.title}, isActive: ${survey.isActive}`);
+    
+    if (!survey.isActive) {
+      console.log(`Survey ${id} is inactive`);
+      return res.status(403).json({ message: 'This survey is no longer active' });
+    }
+    
+    // Return only the data participants need (not including answers)
+    res.json({
+      _id: survey._id,
+      title: survey.title,
+      code: survey.code,
+      questions: survey.questions.map(q => ({
+        _id: q._id,
+        text: q.text,
+        type: q.type,
+        options: q.options
+      }))
+    });
+  } catch (err) {
+    console.error('Error fetching survey for participant:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });

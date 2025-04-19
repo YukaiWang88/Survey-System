@@ -322,9 +322,10 @@ router.patch('/:id/activate', auth, async (req, res) => {
   }
 });
 
-// Close a survey
-router.patch('/:id/close', auth, async (req, res) => {
+// Deactivate a survey
+router.patch('/:id/deactivate', auth, async (req, res) => {
   try {
+    console.log(`Deactivating survey: ${req.params.id}`);
     const survey = await Survey.findOneAndUpdate(
       { _id: req.params.id, creator: req.user._id },
       { isActive: false },
@@ -335,11 +336,12 @@ router.patch('/:id/close', auth, async (req, res) => {
       return res.status(404).json({ message: 'Survey not found' });
     }
     
-    res.json({ message: 'Survey closed successfully', survey });
+    res.json({ message: 'Survey deactivated successfully', survey });
   } catch (err) {
-    console.error('Error closing survey:', err);
+    console.error('Error deactivating survey:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
+
 
 module.exports = router;

@@ -193,4 +193,29 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+// Deactivate a survey
+router.patch('/:id/deactivate', async (req, res) => {
+  try {
+    console.log(`Deactivation request for survey ${req.params.id}`);
+    console.log(`User ID from token: ${req.user._id}`);
+    
+    const survey = await Survey.findOneAndUpdate(
+      { _id: req.params.id },
+      { isActive: false },
+      { new: true }
+    );
+    
+    if (!survey) {
+      console.log('Survey not found for deactivation');
+      return res.status(404).json({ message: 'Survey not found' });
+    }
+    
+    console.log('Survey deactivated successfully');
+    res.json({ message: 'Survey deactivated successfully', survey });
+  } catch (err) {
+    console.error('Error deactivating survey:', err);
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
 module.exports = router;
