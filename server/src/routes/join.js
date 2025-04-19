@@ -28,10 +28,6 @@ router.post('/', async (req, res) => {
     
     // randomly create a user id
     const participantId = `participant-${Date.now()}`;
-    let survey = await Survey.findOne({ code: code });
-    if (!survey) {
-      return res.status(400).json({ message: "Survey Not Found" });
-    }
     
     let surveyId = survey._id;
 

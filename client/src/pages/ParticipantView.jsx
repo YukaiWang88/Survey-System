@@ -33,7 +33,7 @@ const ParticipantView = () => {
   useEffect(() => {
     const fetchSurvey = async () => {
       try {
-        const response = await API.get(`/surveys/code/${code}`);
+        const response = await API.get(`/surveys/code/${surveyId}`);
         setSurvey(response.data);
       } catch (err) {
         setError('Survey not found or has expired');
