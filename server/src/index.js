@@ -4,6 +4,7 @@ const cors = require('cors');
 const surveyRoutes = require('./routes/surveyRoutes');
 const authRoutes = require('./routes/auth');  // Add this line
 const joinRoutes = require('./routes/join'); 
+const presentRoutes = require('./routes/present'); 
 const mongoose = require('mongoose');
 const socketIo = require('socket.io');
 const { join } = require('path');
@@ -69,6 +70,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);  // Add this line for auth routes
 app.use('/api/surveys', surveyRoutes);
 app.use('/api/join', joinRoutes);
+app.use('/api/present', presentRoutes);
 
 
 // Start the server

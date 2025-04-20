@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+// import axios from 'axios';
 import API from '../utils/api';
 import { SocketContext } from '../contexts/SocketContext';
 import { AuthContext } from '../contexts/AuthContext';
@@ -46,13 +46,16 @@ const PresentSurvey = () => {
       
       setSurvey(response.data);
       
-      // Get or generate survey code
-      const codeResponse = await API.post(
-        `/surveys/${surveyId}/generate-code`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setSurveyCode(codeResponse.data.code);
+      console.log("here");
+
+      // // Get or generate survey code
+      // const codeResponse = await API.post(
+      //   `/surveys/${surveyId}/generate-code`,
+      //   { headers: { Authorization: `Bearer ${token}` } }
+      // );
+      // console.log("CODE:", codeResponse.data.code);
+      setSurveyCode(response.data.code);
+
     } catch (err) {
       console.error('Error details:', err);
       if (err.response) {
@@ -73,77 +76,80 @@ const PresentSurvey = () => {
     
     fetchSurvey();
     
-    // Socket setup
-    if (socket) {
-      socket.emit('presenter-join', { surveyId });
+  //   // Socket setup
+  //   if (socket) {
+  //     socket.emit('presenter-join', { surveyId });
       
-      socket.on('participant-joined', (data) => {
-        setParticipants(prev => [...prev, data.participant]);
-      });
+  //     socket.on('participant-joined', (data) => {
+  //       setParticipants(prev => [...prev, data.participant]);
+  //     });
       
-      socket.on('participant-left', (data) => {
-        setParticipants(prev => prev.filter(p => p.id !== data.participantId));
-      });
+  //     socket.on('participant-left', (data) => {
+  //       setParticipants(prev => prev.filter(p => p.id !== data.participantId));
+  //     });
       
-      socket.on('new-response', (data) => {
-        setResponses(prev => {
-          const questionResponses = prev[data.questionId] || [];
+  //     socket.on('new-response', (data) => {
+  //       setResponses(prev => {
+  //         const questionResponses = prev[data.questionId] || [];
           
-          // Check if this participant already responded
-          const existingIndex = questionResponses.findIndex(
-            r => r.participantId === data.participantId
-          );
+  //         // Check if this participant already responded
+  //         const existingIndex = questionResponses.findIndex(
+  //           r => r.participantId === data.participantId
+  //         );
           
-          if (existingIndex >= 0) {
-            // Update existing response
-            const updatedResponses = [...questionResponses];
-            updatedResponses[existingIndex] = {
-              participantId: data.participantId,
-              answer: data.answer,
-              timestamp: Date.now()
-            };
-            return {
-              ...prev,
-              [data.questionId]: updatedResponses
-            };
-          }
+  //         if (existingIndex >= 0) {
+  //           // Update existing response
+  //           const updatedResponses = [...questionResponses];
+  //           updatedResponses[existingIndex] = {
+  //             participantId: data.participantId,
+  //             answer: data.answer,
+  //             timestamp: Date.now()
+  //           };
+  //           return {
+  //             ...prev,
+  //             [data.questionId]: updatedResponses
+  //           };
+  //         }
           
-          // Add new response
-          return {
-            ...prev,
-            [data.questionId]: [
-              ...questionResponses,
-              {
-                participantId: data.participantId,
-                answer: data.answer,
-                timestamp: Date.now()
-              }
-            ]
-          };
-        });
-      });
+  //         // Add new response
+  //         return {
+  //           ...prev,
+  //           [data.questionId]: [
+  //             ...questionResponses,
+  //             {
+  //               participantId: data.participantId,
+  //               answer: data.answer,
+  //               timestamp: Date.now()
+  //             }
+  //           ]
+  //         };
+  //       });
+  //     });
       
-      return () => {
-        socket.emit('presenter-leave', { surveyId });
-        socket.off('participant-joined');
-        socket.off('participant-left');
-        socket.off('new-response');
-      };
-    }
-  }, [currentUser, navigate, socket, surveyId]);
+  //     return () => {
+  //       socket.emit('presenter-leave', { surveyId });
+  //       socket.off('participant-joined');
+  //       socket.off('participant-left');
+  //       socket.off('new-response');
+  //     };
+  //   }
+  // }, [currentUser, navigate, socket, surveyId]);
   
+
+
+  //-------
   const handleNextQuestion = () => {
     if (currentQuestionIndex < survey.questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setShowingAnswer(false);
       
-      if (socket) {
-        socket.emit('change-question', {
-          surveyId,
-          questionIndex: currentQuestionIndex + 1,
-          questionId: currentQuestionIndex + 1
-        });
-      }
+      // if (socket) {
+      //   socket.emit('change-question', {
+      //     surveyId,
+      //     questionIndex: currentQuestionIndex + 1,
+      //     questionId: currentQuestionIndex + 1
+      //   });
+      // }
     }
   };
   
@@ -152,40 +158,40 @@ const PresentSurvey = () => {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
       setShowingAnswer(false);
       
-      if (socket) {
-        socket.emit('change-question', {
-          surveyId,
-          questionIndex: currentQuestionIndex - 1
-        });
-      }
+      // if (socket) {
+      //   socket.emit('change-question', {
+      //     surveyId,
+      //     questionIndex: currentQuestionIndex - 1
+      //   });
+      // }
     }
   };
   
   const toggleShowQuestion = () => {
     setShowingQuestion(!showingQuestion);
     
-    if (socket) {
-      socket.emit(showingQuestion ? 'hide-question' : 'show-question', {
-        surveyId
-      });
-    }
+    // if (socket) {
+    //   socket.emit(showingQuestion ? 'hide-question' : 'show-question', {
+    //     surveyId
+    //   });
+    // }
   };
   
   const toggleShowAnswer = () => {
     setShowingAnswer(!showingAnswer);
     
-    if (socket) {
-      socket.emit(showingAnswer ? 'hide-answer' : 'show-answer', {
-        surveyId
-      });
-    }
+    // if (socket) {
+    //   socket.emit(showingAnswer ? 'hide-answer' : 'show-answer', {
+    //     surveyId
+    //   });
+    // }
   };
 
 
   const endPresentation = () => {
-    if (socket) {
-      socket.emit('end-survey', { surveyId });
-    }
+    // if (socket) {
+    //   socket.emit('end-survey', { surveyId });
+    // }
     navigate('/dashboard');
   };
   
@@ -352,6 +358,6 @@ const PresentSurvey = () => {
       </div>
     </div>
   );
-};
+})};
 
 export default PresentSurvey;

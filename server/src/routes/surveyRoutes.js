@@ -87,7 +87,7 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     // Find survey in MongoDB
     const survey = await Survey.findOne({ 
       _id: id, 
@@ -364,4 +364,18 @@ router.get('/code/:surveyId', async (req, res) => {
   }
 });
 
+// generate-code
+router.post('/:surveyId/generate-code', async (req, res) => {
+
+  try {
+    const { surveyId } = req.params;
+    const survey = await Survey.findOne({ _id: surveyId });
+    res.json({
+      code: survey.code,
+  });
+  } catch (err) {
+    console.error('Get survey error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 module.exports = router;

@@ -54,8 +54,14 @@ router.post('/register', async (req, res) => {
     console.log('User registered successfully:', userResponse);
     res.status(201).json({ token, user: userResponse });
   } catch (err) {
+
     console.error('Registration error on server:', err);
-    res.status(500).json({ message: 'Server error during registration' });
+    if (err.name === 'ValidationError' && err.errors?.email?.message === 'Please fill a valid email address') {
+        return res.status(400).json({ message: 'Please fill a valid email address' });
+    }
+    else {
+        res.status(500).json({ message: 'Server error during registration' });
+    }
   }
 });
 

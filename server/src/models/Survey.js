@@ -14,7 +14,10 @@ const QuestionSchema = new mongoose.Schema({
            'instruction', 'mc', 'text', 'number', 'checkbox', 'rating',
            'wordcloud', 'quiz-mc']
   },
-  text: { type: String, required: true },
+  text: { 
+    type: String, 
+    required:  [true, '`text` field is required.'],
+  },
   questionText: { type: String },
   title: { type: String }, // Add this field
   options: [OptionSchema],

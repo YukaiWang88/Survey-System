@@ -38,6 +38,7 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/survey-syst
 app.use('/api/auth', require('./src/routes/auth'));
 app.use('/api/surveys', require('./src/routes/surveyRoutes'));
 app.use('/api/join', require('./src/routes/join'));
+app.use('/api/present', require('./src/routes/present'));
 
 // Start server
 const PORT = process.env.PORT || 3000;
