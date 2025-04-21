@@ -228,6 +228,8 @@ const PresentSurvey = () => {
   
   const currentQuestion = survey.questions[currentQuestionIndex];
   console.log("current question: ", currentQuestion);
+
+  //
  
   // console.log(totalParticipants);
   const currentResponses = responses[currentQuestionIndex] || [];

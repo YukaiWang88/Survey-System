@@ -35,6 +35,7 @@ const ParticipantView = () => {
   const participantId = location.state?.participantId;
   const nickname = location.state?.nickname || 'Anonymous';
 
+
   useEffect(() => {
     const fetchSurvey = async () => {
       try {
@@ -49,6 +50,8 @@ const ParticipantView = () => {
     
     fetchSurvey();
     
+    // parse_survey_ ge
+
     // Socket connection
     if (socket) {
       socket.emit('join-survey', { surveyId, participantId, nickname });

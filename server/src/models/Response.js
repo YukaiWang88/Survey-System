@@ -1,5 +1,24 @@
 const mongoose = require('mongoose');
 
+
+const QuestionResult = new mongoose.Schema({
+  _id: {type: mongoose.Schema.Types.ObjectId},
+  type: { 
+    type: String, 
+    required: true,
+    // Add ALL possible types your frontend might send
+    enum: ['multiple-choice', 'open-ended', 'scale', 'word-cloud', 
+           'instruction', 'mc', 'text', 'number', 'checkbox', 'rating',
+           'wordcloud', 'quiz-mc']
+  },
+  results: {
+    type: Map,  // Using Map type for dynamic keys
+    of: Number, // With numeric values
+    required: true
+  },
+  answered: {type: Boolean},
+}, {strict: false });
+
 const ResponseSchema = new mongoose.Schema({
   survey: {
     type: mongoose.Schema.Types.ObjectId,
@@ -11,17 +30,10 @@ const ResponseSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
-  answers: [{
-    questionId: mongoose.Schema.Types.ObjectId,
-    answer: mongoose.Schema.Types.Mixed // Can store any type of answer
-  }],
+  answers: [QuestionResult],
   completed: {
     type: Boolean,
     default: false
-  },
-  progress: {
-    type: Number,
-    default: 0
   },
   startedAt: {
     type: Date,

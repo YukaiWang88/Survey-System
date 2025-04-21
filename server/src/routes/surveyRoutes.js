@@ -174,6 +174,8 @@ router.put('/:id', async (req, res) => {
   console.log('User ID:', req.user?._id);
   try {
     const { id } = req.params;
+
+    console.log("update: ", req.body);
     
     // Find and update survey in MongoDB
     const updatedSurvey = await Survey.findOneAndUpdate(
@@ -182,9 +184,67 @@ router.put('/:id', async (req, res) => {
       { new: true }
     );
     
-    if (!updatedSurvey) {
-      return res.status(404).json({ message: 'Survey not found' });
-    }
+    // if (!updatedSurvey) {
+    //   return res.status(404).json({ message: 'Survey not found' });
+    // }
+
+    // Validate and fix questions data
+    let questions = updatedSurvey.questions;
+
+    const validatedQuestions = questions.map((question, index) => {
+      // If there's a title or questionText but no text, use one of those
+      if (!question.text) {
+        if (question.questionText) {
+          question.text = question.questionText;
+        } else if (question.title) {
+          question.text = question.title;
+        } else {
+          throw new Error(`Question ${index + 1} is missing required text field`);
+        }
+      }
+      if (!question.result) {
+        switch (question.type) {
+              case 'mc':
+                results = new Map(
+                  question.options.map(option => [option.text, 0])
+                );
+                question.results = results;
+                break;
+              case 'wordcloud':
+                results = new Map();
+                question.results = results;
+                break;
+              case 'scale':
+                start = question.minValue;
+                end = question.maxValue;
+                results = new Map(
+                  Array.from({ length: end - start + 1 }, (_, i) => [
+                    String(start + i), // Key as string (e.g., '1', '2')
+                    0,                // Default value
+                  ])
+                );
+                question.results = results;
+                break;
+
+              case 'quiz':
+                results = new Map(
+                  question.options.map(option => [option.text, 0])
+                );
+                question.results = results;
+                break;
+              case 'instruction':
+                question.results = new Map();
+              default:
+                return;
+            }
+      }
+      
+      return question;
+    });
+
+
+        
+
     
     res.json({ 
       message: 'Survey updated successfully',
