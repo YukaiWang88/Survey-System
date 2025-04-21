@@ -1,5 +1,5 @@
 import React from 'react';
-export const MultipleChoiceQuestion = ({ 
+export const MCQuestion = ({ 
   question = {}, 
   onChange, 
   index 
@@ -53,4 +53,4 @@ export const MultipleChoiceQuestion = ({
   );
 };
 
-export default MultipleChoiceQuestion;
+export default MCQuestion;

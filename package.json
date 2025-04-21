@@ -1,6 +1,10 @@
 {
     "scripts": {
-      "start": "node src/index.js",
-      "dev": "nodemon src/index.js"
+        "start": "node src/index.js",
+        "dev": "nodemon src/index.js"
+    },
+    "dependencies": {
+        "bootstrap": "^5.3.5",
+        "react-bootstrap": "^2.10.9"
     }
-  }
+}

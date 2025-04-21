@@ -4,6 +4,7 @@ import axios from 'axios';
 import API from '../utils/api';
 import { SocketContext } from '../contexts/SocketContext';
 import '../styles/participant-view.css';
+import '../styles/participate-survey.css';
 
 // Question Components
 import MCQuestion from '../components/questions/MCQuestion';
@@ -11,6 +12,10 @@ import ScaleQuestion from '../components/questions/ScaleQuestion';
 import WordCloudQuestion from '../components/questions/WordCloudQuestion';
 import InstructionSlide from '../components/questions/InstructionSlide';
 import QuizMCQuestion from '../components/questions/QuizMCQuestion';
+
+// Import these or create them
+import ParticipantWordCloud from '../components/participant/ParticipantWordCloud';
+import ParticipantMC from '../components/participant/ParticipantMC';
 
 const ParticipantView = () => {
   const { surveyId } = useParams();
@@ -153,6 +158,77 @@ const ParticipantView = () => {
     return answer !== undefined && answer !== '';
   };
 
+  // New function to render the right component based on question type
+  const renderQuestion = () => {
+    if (!survey || !survey.questions || survey.questions.length === 0) {
+      return <div>No questions available</div>;
+    }
+    
+    const currentQuestion = survey.questions[currentQuestionIndex];
+    const currentAnswer = answers[currentQuestion.id] || '';
+    
+    console.log('Rendering question type:', currentQuestion.type);
+    
+    switch (currentQuestion.type) {
+      case 'wordcloud':
+      case 'word-cloud':
+        return (
+          <ParticipantWordCloud
+            question={currentQuestion}
+            answer={currentAnswer}
+            onAnswerChange={handleAnswerChange}
+          />
+        );
+        
+      case 'multiple-choice':
+      case 'mc':
+        return (
+          <ParticipantMC
+            question={currentQuestion}
+            answer={currentAnswer}
+            onAnswerChange={handleAnswerChange}
+          />
+        );
+        
+      case 'instruction':
+        return (
+          <InstructionSlide
+            content={currentQuestion}
+            onContinue={handleNext}
+          />
+        );
+        
+      case 'scale':
+        return (
+          <ScaleQuestion
+            question={currentQuestion}
+            answer={currentAnswer}
+            onAnswerChange={handleAnswerChange}
+            showResults={false}
+          />
+        );
+        
+      case 'quiz-mc':
+        return (
+          <QuizMCQuestion
+            question={currentQuestion}
+            answer={currentAnswer}
+            onAnswerChange={handleAnswerChange}
+            showAnswer={showAnswer}
+            feedback={feedback}
+          />
+        );
+        
+      default:
+        return (
+          <div className="question-container">
+            <h3 className="question-title">Unsupported Question Type</h3>
+            <p>This question type ({currentQuestion.type}) is not supported in participation view.</p>
+          </div>
+        );
+    }
+  };
+
   if (loading) {
     return <div className="loading">Loading survey...</div>;
   }
@@ -165,7 +241,6 @@ const ParticipantView = () => {
     return <div className="error-container">No questions found in this survey.</div>;
   }
 
-  const currentQuestion = survey.questions[currentQuestionIndex];
   const totalQuestions = survey.questions.length;
   const progress = `${currentQuestionIndex + 1}/${totalQuestions}`;
 
@@ -178,57 +253,15 @@ const ParticipantView = () => {
         )}
       </div>
       
-      <div className="question-container">
-        {currentQuestion.type === 'multiple-choice' && (
-          <MCQuestion
-            question={currentQuestion}
-            answer={answers[currentQuestion.id] || (currentQuestion.allowMultiple ? [] : '')}
-            onAnswerChange={handleAnswerChange}
-            showResults={false}
-          />
-        )}
-        
-        {currentQuestion.type === 'quiz-mc' && (
-          <QuizMCQuestion
-            question={currentQuestion}
-            answer={answers[currentQuestion.id] || ''}
-            onAnswerChange={handleAnswerChange}
-            showAnswer={showAnswer}
-            feedback={feedback}
-          />
-        )}
-        
-        {currentQuestion.type === 'word-cloud' && (
-          <WordCloudQuestion
-            question={currentQuestion}
-            answer={answers[currentQuestion.id] || ''}
-            onAnswerChange={handleAnswerChange}
-          />
-        )}
-        
-        {currentQuestion.type === 'scale' && (
-          <ScaleQuestion
-            question={currentQuestion}
-            answer={answers[currentQuestion.id] || ''}
-            onAnswerChange={handleAnswerChange}
-            showResults={false}
-          />
-        )}
-        
-        {currentQuestion.type === 'instruction' && (
-          <InstructionSlide
-            content={currentQuestion}
-            onContinue={handleNext}
-          />
-        )}
-      </div>
+      {/* Use the renderQuestion function here instead of conditionals */}
+      {renderQuestion()}
       
-      {currentQuestion.type !== 'instruction' && (
+      {survey.questions[currentQuestionIndex].type !== 'instruction' && (
         <div className="question-actions">
           <button 
             className="btn-next"
             onClick={handleNext}
-            disabled={currentQuestion.required && !isAnswerSelected()}
+            disabled={survey.questions[currentQuestionIndex].required && !isAnswerSelected()}
           >
             {currentQuestionIndex < totalQuestions - 1 ? 'Next' : 'Finish'}
           </button>
