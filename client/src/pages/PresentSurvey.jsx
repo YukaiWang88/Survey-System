@@ -33,6 +33,7 @@ const PresentSurvey = () => {
       return;
     }
     
+    console.log("in present survey");
     const fetchSurvey = async () => {
     try {
       const token = localStorage.getItem('authToken');
@@ -40,7 +41,7 @@ const PresentSurvey = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      // console.log("present survey react: ", response.data)
+      console.log("present survey react: ", response.data)
       
       if (!response.data) {
         throw new Error('Empty response received');
@@ -69,65 +70,67 @@ const PresentSurvey = () => {
     };
     
     fetchSurvey();
+
+    console.log("good till here")
     
-  //   // Socket setup
-  //   if (socket) {
-  //     socket.emit('presenter-join', { surveyId });
+    // Socket setup
+    // if (socket) {
+    //   socket.emit('presenter-join', { surveyId });
       
-  //     socket.on('participant-joined', (data) => {
-  //       setParticipants(prev => [...prev, data.participant]);
-  //     });
+    //   socket.on('participant-joined', (data) => {
+    //     setParticipants(prev => [...prev, data.participant]);
+    //   });
       
-  //     socket.on('participant-left', (data) => {
-  //       setParticipants(prev => prev.filter(p => p.id !== data.participantId));
-  //     });
+    //   socket.on('participant-left', (data) => {
+    //     setParticipants(prev => prev.filter(p => p.id !== data.participantId));
+    //   });
       
-  //     socket.on('new-response', (data) => {
-  //       setResponses(prev => {
-  //         const questionResponses = prev[data.questionId] || [];
+    //   socket.on('new-response', (data) => {
+    //     setResponses(prev => {
+    //       const questionResponses = prev[data.questionId] || [];
           
-  //         // Check if this participant already responded
-  //         const existingIndex = questionResponses.findIndex(
-  //           r => r.participantId === data.participantId
-  //         );
+    //       // Check if this participant already responded
+    //       const existingIndex = questionResponses.findIndex(
+    //         r => r.participantId === data.participantId
+    //       );
           
-  //         if (existingIndex >= 0) {
-  //           // Update existing response
-  //           const updatedResponses = [...questionResponses];
-  //           updatedResponses[existingIndex] = {
-  //             participantId: data.participantId,
-  //             answer: data.answer,
-  //             timestamp: Date.now()
-  //           };
-  //           return {
-  //             ...prev,
-  //             [data.questionId]: updatedResponses
-  //           };
-  //         }
+    //       if (existingIndex >= 0) {
+    //         // Update existing response
+    //         const updatedResponses = [...questionResponses];
+    //         updatedResponses[existingIndex] = {
+    //           participantId: data.participantId,
+    //           answer: data.answer,
+    //           timestamp: Date.now()
+    //         };
+    //         return {
+    //           ...prev,
+    //           [data.questionId]: updatedResponses
+    //         };
+    //       }
           
-  //         // Add new response
-  //         return {
-  //           ...prev,
-  //           [data.questionId]: [
-  //             ...questionResponses,
-  //             {
-  //               participantId: data.participantId,
-  //               answer: data.answer,
-  //               timestamp: Date.now()
-  //             }
-  //           ]
-  //         };
-  //       });
-  //     });
+    //       // Add new response
+    //       return {
+    //         ...prev,
+    //         [data.questionId]: [
+    //           ...questionResponses,
+    //           {
+    //             participantId: data.participantId,
+    //             answer: data.answer,
+    //             timestamp: Date.now()
+    //           }
+    //         ]
+    //       };
+    //     });
+    //   });
       
-  //     return () => {
-  //       socket.emit('presenter-leave', { surveyId });
-  //       socket.off('participant-joined');
-  //       socket.off('participant-left');
-  //       socket.off('new-response');
-  //     };
-  //   }
-  // }, [currentUser, navigate, socket, surveyId]);
+    //   return () => {
+    //     socket.emit('presenter-leave', { surveyId });
+    //     socket.off('participant-joined');
+    //     socket.off('participant-left');
+    //     socket.off('new-response');
+    //   };
+    // }
+  }, [currentUser, navigate, socket, surveyId]);
   
 
 
@@ -220,9 +223,15 @@ const PresentSurvey = () => {
       </div>
     );
   }
+
+  console.log("still good");
   
   const currentQuestion = survey.questions[currentQuestionIndex];
+  console.log("current question: ", currentQuestion);
+ 
+  // console.log(totalParticipants);
   const currentResponses = responses[currentQuestionIndex] || [];
+  console.log("current response: ", currentResponses);
   const responseRate = participants.length > 0 
     ? Math.round((currentResponses.length / participants.length) * 100)
     : 0;
@@ -272,44 +281,44 @@ const PresentSurvey = () => {
             <h2>{currentQuestion.title}</h2>
           </div>
           
-            <div className="results-container">
-              {currentQuestion.type === 'mc' && (
-                <MCResults 
-                  question={currentQuestion}
-                  responses={currentResponses}
-                  totalParticipants={participants.length}
-                />
-              )}
-              
-              {currentQuestion.type === 'quiz-mc' && (
-                <QuizResults 
-                  question={currentQuestion}
-                  responses={currentResponses}
-                  totalParticipants={participants.length}
-                  showAnswer={showingAnswer}
-                />
-              )}
-              
-              {currentQuestion.type === 'wordcloud' && (
-                <WordCloudResults 
-                  responses={currentResponses}
-                />
-              )}
-              
-              {currentQuestion.type === 'scale' && (
-                <ScaleResults 
-                  question={currentQuestion}
-                  responses={currentResponses}
-                  totalParticipants={participants.length}
-                />
-              )}
-              
-              {currentQuestion.type === 'instruction' && (
-                <div className="instruction-display">
-                  <p>{currentQuestion.content || 'This is an instruction slide. No responses needed.'}</p>
-                </div>
-              )}
-            </div>
+          {/* <div className="results-container">
+            {currentQuestion.type === 'mc' && (
+              <MCResults 
+                question={currentQuestion}
+                responses={currentResponses}
+                totalParticipants={participants.length}
+              />
+            )}
+            
+            {currentQuestion.type === 'quiz-mc' && (
+              <QuizResults 
+                question={currentQuestion}
+                responses={currentResponses}
+                totalParticipants={participants.length}
+                showAnswer={showingAnswer}
+              />
+            )}
+            
+            {currentQuestion.type === 'wordcloud' && (
+              <WordCloudResults 
+                responses={currentResponses}
+              />
+            )}
+            
+            {currentQuestion.type === 'scale' && (
+              <ScaleResults 
+                question={currentQuestion}
+                responses={currentResponses}
+                totalParticipants={participants.length}
+              />
+            )}
+            
+            {currentQuestion.type === 'instruction' && (
+              <div className="instruction-display">
+                <p>{currentQuestion.content || 'This is an instruction slide. No responses needed.'}</p>
+              </div>
+            )}
+          </div> */}
         </div>
         
         <div className="presentation-sidebar">
@@ -352,6 +361,6 @@ const PresentSurvey = () => {
       </div>
     </div>
   );
-})};
+};
 
 export default PresentSurvey;

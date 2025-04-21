@@ -52,6 +52,7 @@ const SurveySchema = new mongoose.Schema({
     unique: true
   },
   isActive: { type: Boolean, default: false },
+  isLocked: { type: Boolean, default: false }, // for our convenience, once the survey has been actiavte once, it should no longer be modified
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 }, { strict: false });

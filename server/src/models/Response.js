@@ -12,7 +12,7 @@ const ResponseSchema = new mongoose.Schema({
     required: true
   },
   answers: [{
-    questionId: String,
+    questionId: mongoose.Schema.Types.ObjectId,
     answer: mongoose.Schema.Types.Mixed // Can store any type of answer
   }],
   completed: {
