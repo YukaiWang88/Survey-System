@@ -1,9 +1,30 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const http = require('http');
+const socketIO = require('socket.io');
+
 require('dotenv').config();
 
 const app = express();
+const server = http.createServer(app);
+const io = socketIO(server);
+
+// Import socket handlers
+const responseHandler = require('./src/socket/responseHandler');
+const responseRoutes = require('./src/routes/responseRoutes');
+app.use('/api/responses', responseRoutes);
+
+io.on('connection', (socket) => {
+  console.log('New client connected');
+  
+  // Apply the response handler to this socket
+  responseHandler(io, socket);
+  
+  socket.on('disconnect', () => {
+    console.log('Client disconnected');
+  });
+});
 
 // Middleware
 app.use(cors());
