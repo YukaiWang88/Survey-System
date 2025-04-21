@@ -14,15 +14,14 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: ['https://survey-system-frontend.onrender.com', 'http://localhost:3001', 'http://localhost:3000'],
-    methods: ['GET', 'POST'],
-    credentials: true
+    origin: '*',
+    methods: ['GET', 'POST']
   }
 });
 
 // Middleware
 app.use(cors({
-  origin: ['https://survey-system-frontend.onrender.com', 'http://localhost:3001', 'http://localhost:3000'],
+  origin: ['http://localhost:3001', 'https://localhost:3002'], 
   credentials: true
 }));
 
