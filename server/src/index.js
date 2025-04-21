@@ -61,22 +61,6 @@ io.on('connection', (socket) => {
   });
 });
 
-// Root route
-app.get('/', (req, res) => {
-  res.status(200).json({
-    message: 'Survey System API is running',
-    endpoints: {
-      health: '/api/health',
-      auth: '/api/auth',
-      surveys: '/api/surveys',
-      join: '/api/join',
-      present: '/api/present'
-    },
-    documentation: 'Add documentation link here'
-  });
-});
-
-
 // Health check route
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'Server is running' });
