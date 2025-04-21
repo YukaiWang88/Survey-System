@@ -6,6 +6,11 @@ const OptionSchema = new mongoose.Schema({
 }, { _id: false, strict: false });
 
 const QuestionSchema = new mongoose.Schema({
+  _id: {
+    type: mongoose.Schema.Types.ObjectId,
+    auto: true,  // This ensures MongoDB automatically generates the ID
+    default: () => new mongoose.Types.ObjectId() // Default value generator
+  },
   type: { 
     type: String, 
     required: true,
@@ -25,7 +30,7 @@ const QuestionSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Mixed, // Allow any settings
     default: {}
   }
-}, { _id: false, strict: false });
+}, { _id: true, strict: false });
 
 const SurveySchema = new mongoose.Schema({
   title: { type: String, required: true },

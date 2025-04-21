@@ -45,15 +45,7 @@ const PresentSurvey = () => {
       }
       
       setSurvey(response.data);
-      
-      console.log("here");
 
-      // // Get or generate survey code
-      // const codeResponse = await API.post(
-      //   `/surveys/${surveyId}/generate-code`,
-      //   { headers: { Authorization: `Bearer ${token}` } }
-      // );
-      // console.log("CODE:", codeResponse.data.code);
       setSurveyCode(response.data.code);
 
     } catch (err) {

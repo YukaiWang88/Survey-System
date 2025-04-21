@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const Survey = require('../models/Survey'); // Import the Survey model
+const SurveyResult = require('../models/SurveyResult'); // Import the Survey model
 
 // Authentication middleware
 const auth = async (req, res, next) => {
@@ -30,6 +31,10 @@ router.use(auth);
 
 // CREATE - Create a new survey
 router.post('/', async (req, res) => {
+
+  console.log('POST /api/surveys request received');
+  console.log('Auth header:', req.header('Authorization'));
+  console.log('User ID:', req.user?._id);
   try {
     const { title, description, questions } = req.body;
     
@@ -49,15 +54,23 @@ router.post('/', async (req, res) => {
       return question;
     });
     
+
     const survey = new Survey({
       title,
       description,
       questions: validatedQuestions,
       creator: req.user._id,
       code: Math.random().toString(36).substring(2, 8).toUpperCase()
-    });
+    });_
+    const survey_result = new SurveyResult({
+
+    })
     
     await survey.save();
+
+    
+
+    
     res.status(201).json(survey);
   } catch (err) {
     console.error('Create survey error:', err);
@@ -123,6 +136,9 @@ router.get('/joined', auth, async (req, res) => {
 
 // UPDATE - Update a survey
 router.put('/:id', async (req, res) => {
+  console.log('GET /api/surveys/id request received');
+  console.log('Auth header:', req.header('Authorization'));
+  console.log('User ID:', req.user?._id);
   try {
     const { id } = req.params;
     
