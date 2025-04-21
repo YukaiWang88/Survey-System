@@ -5,8 +5,8 @@ const router = express.Router();
 const API_URL = "https://api2.road2all.com/v1/chat/completions";
 const API_KEY = process.env.OPENAI_API_KEY;
 
-router.post("/api/extract", async (req, res) => {
-  const { description } = req.body;
+router.post("/extract", async (req, res) => {
+  const description = req.body.description || "This course is practical, engaging, and challenging.";
 
   const prompt = `
 Please extract the three most important adjectives that describe the characteristics of the following course. Only return an array of adjectives:

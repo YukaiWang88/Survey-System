@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList, Cell } from 'recharts';
 import axios from 'axios';
+import API from '../../utils/api';
 const WordCloudResults = ({ question, responses, totalParticipants }) => {
  
   const [adjectives, setAdjectives] = useState([]);
@@ -60,7 +61,7 @@ const WordCloudResults = ({ question, responses, totalParticipants }) => {
  // Combine all responses into a single description string
  const description = responses.map((r) => r.answer).join(' ');
     try {
-      const response = await axios.post('/api/extract', { description });
+      const response = await API.post('/extract', { description });
       setAdjectives(response.data.adjectives);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to extract adjectives.');

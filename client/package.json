@@ -39,7 +39,7 @@
         "test": "react-scripts test",
         "eject": "react-scripts eject",
         "lint": "eslint src",
-        "homepage": "https://yukaiwang88.github.io/Survey-System",
+        "homepage": "https://yukaiwang88.github.io/Survey-System"
     },
     "eslintConfig": {
         "extends": [

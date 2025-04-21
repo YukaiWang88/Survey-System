@@ -8,6 +8,7 @@ const presentRoutes = require('./routes/present');
 const mongoose = require('mongoose');
 const socketIo = require('socket.io');
 const { join } = require('path');
+const llmRoutes = require('./routes/llm');
 
 // Initialize Express app
 const app = express();
@@ -71,6 +72,8 @@ app.use('/api/auth', authRoutes);  // Add this line for auth routes
 app.use('/api/surveys', surveyRoutes);
 app.use('/api/join', joinRoutes);
 app.use('/api/present', presentRoutes);
+
+app.use('/api/llm', llmRoutes);
 
 
 // Start the server
