@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
+require('dotenv').config();
 
 
 const API_URL = "https://api2.road2all.com/v1/chat/completions";
-// const API_KEY = process.env.OPENAI_API_KEY;
-const API_KEY = "sk-AihzBQwE4KRU6Ye84d70A10896C7458d949b4592A66030Bb"; // 使用您实际的 API 密钥
+const API_KEY = process.env.OPENAI_API_KEY;
 
 router.post("/extract", async (req, res) => {
   try {
