@@ -104,7 +104,7 @@ npm start
 brew services start mongodb-community
 ```
 
-The application will be available at http://localhost:3001
+The application will be available at http://localhost:3001 and https://localhost:3002
 
 ## 📱 Usage
 
