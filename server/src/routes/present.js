@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Survey = require('../models/Survey');
 
-// Join a survey by code
+// Join present by code
 router.post('/', async (req, res) => {
   try {
     const { code, nickname } = req.body;

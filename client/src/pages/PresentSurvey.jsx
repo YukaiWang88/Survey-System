@@ -39,6 +39,8 @@ const PresentSurvey = () => {
       const response = await API.get(`/surveys/${surveyId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+
+      // console.log("present survey react: ", response.data)
       
       if (!response.data) {
         throw new Error('Empty response received');

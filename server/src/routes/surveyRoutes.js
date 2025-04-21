@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const Survey = require('../models/Survey'); // Import the Survey model
-const SurveyResult = require('../models/SurveyResult'); // Import the Survey model
 
 // Authentication middleware
 const auth = async (req, res, next) => {
@@ -50,6 +49,42 @@ router.post('/', async (req, res) => {
           throw new Error(`Question ${index + 1} is missing required text field`);
         }
       }
+      if (!question.result) {
+        switch (question.type) {
+              case 'mc':
+                results = new Map(
+                  question.options.map(option => [option.text, 0])
+                );
+                question.results = results;
+                break;
+              case 'wordcloud':
+                results = new Map();
+                question.results = results;
+                break;
+              case 'scale':
+                start = question.minValue;
+                end = question.maxValue;
+                results = new Map(
+                  Array.from({ length: end - start + 1 }, (_, i) => [
+                    String(start + i), // Key as string (e.g., '1', '2')
+                    0,                // Default value
+                  ])
+                );
+                question.results = results;
+                break;
+
+              case 'quiz':
+                results = new Map(
+                  question.options.map(option => [option.text, 0])
+                );
+                question.results = results;
+                break;
+              case 'instruction':
+                question.results = new Map();
+              default:
+                return;
+            }
+      }
       
       return question;
     });
@@ -61,15 +96,9 @@ router.post('/', async (req, res) => {
       questions: validatedQuestions,
       creator: req.user._id,
       code: Math.random().toString(36).substring(2, 8).toUpperCase()
-    });_
-    const survey_result = new SurveyResult({
-
-    })
+    });
     
     await survey.save();
-
-    
-
     
     res.status(201).json(survey);
   } catch (err) {
@@ -98,6 +127,9 @@ router.get('/', async (req, res) => {
 
 // READ - Get a survey by ID
 router.get('/:id', async (req, res) => {
+  console.log('GET /api/surveys/:id request received');
+  console.log('Auth header:', req.header('Authorization'));
+  console.log('User ID:', req.user?._id);
   try {
     const { id } = req.params;
 
@@ -110,7 +142,8 @@ router.get('/:id', async (req, res) => {
     if (!survey) {
       return res.status(404).json({ message: 'Survey not found' });
     }
-    
+
+    console.log(survey)
     res.json(survey);
   } catch (err) {
     console.error('Get survey error:', err);
@@ -395,3 +428,15 @@ router.post('/:surveyId/generate-code', async (req, res) => {
   }
 });
 module.exports = router;
+
+
+
+// // Update existing result
+// await SurveyResult.findOneAndUpdate(
+//   { survey_id, question_id },
+//   { 
+//     $inc: { 'results.Python': 1 }, // Increment count
+//     $set: { last_updated: new Date() }
+//   },
+//   { upsert: true } // Create if doesn't exist
+// );

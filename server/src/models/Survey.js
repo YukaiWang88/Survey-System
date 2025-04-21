@@ -29,7 +29,12 @@ const QuestionSchema = new mongoose.Schema({
   settings: {
     type: mongoose.Schema.Types.Mixed, // Allow any settings
     default: {}
-  }
+  },
+  results: {
+    type: Map,  // Using Map type for dynamic keys
+    of: Number, // With numeric values
+    required: true
+  },
 }, { _id: true, strict: false });
 
 const SurveySchema = new mongoose.Schema({
