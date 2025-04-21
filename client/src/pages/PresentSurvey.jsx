@@ -10,6 +10,9 @@ import WordCloudResults from '../components/results/WordCloudResults';
 import ScaleResults from '../components/results/ScaleResults';
 import QuizResults from '../components/results/QuizResults';
 import '../styles/present-survey.css';
+import ExtractAdjectives from '../components/results/extractAdjectives';
+
+
 
 const PresentSurvey = () => {
   const { surveyId } = useParams();
@@ -360,6 +363,8 @@ const PresentSurvey = () => {
             </button>
           </div>
         </div>
+
+         <ExtractAdjectives />
       </div>
     </div>
   );
