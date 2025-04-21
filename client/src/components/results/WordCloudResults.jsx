@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList, Cell } from 'recharts';
-
+import axios from 'axios';
 const WordCloudResults = ({ question, responses, totalParticipants }) => {
-  if (!question || !responses) return null;
+ 
+  const [adjectives, setAdjectives] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');  if (!question || !responses) return null;
 
   // Process all words from responses
   const wordCounts = {};
@@ -45,6 +48,26 @@ const WordCloudResults = ({ question, responses, totalParticipants }) => {
     '#215BA6', '#3182CE', '#4299E1', '#63B3ED', '#90CDF4',
   ];
 
+  const handleExtractAdjectives = async () => {
+    if (!description.trim()) {
+      setError('Please enter a course description.');
+      return;
+    }
+
+    setError('');
+    setLoading(true);
+    setAdjectives([]);
+ // Combine all responses into a single description string
+ const description = responses.map((r) => r.answer).join(' ');
+    try {
+      const response = await axios.post('/api/extract', { description });
+      setAdjectives(response.data.adjectives);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to extract adjectives.');
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="results-container">
       {/* Word cloud visualization */}
@@ -100,6 +123,34 @@ const WordCloudResults = ({ question, responses, totalParticipants }) => {
             </Bar>
           </BarChart>
         </ResponsiveContainer>
+      </div>
+        {/* Extract Adjectives Button */}
+        <div style={{ marginTop: '20px', textAlign: 'center' }}>
+        <button
+          onClick={handleExtractAdjectives}
+          disabled={loading}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: '#007BFF',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer',
+          }}
+        >
+          {loading ? 'Extracting...' : 'Extract Key Adjectives'}
+        </button>
+        {error && <p style={{ color: 'red', marginTop: '10px' }}>{error}</p>}
+        {adjectives.length > 0 && (
+          <div style={{ marginTop: '20px' }}>
+            <h3>Key Adjectives:</h3>
+            <ul>
+              {adjectives.map((adj, index) => (
+                <li key={index}>{adj}</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );
