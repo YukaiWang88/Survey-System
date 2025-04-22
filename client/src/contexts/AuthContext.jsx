@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }) => {
       }
       
       try {
-        const response = await axios.get('http://localhost:3000/api/auth/verify');
+        const response = await axios.get('http://47.110.133.191:3000/api/auth/verify');
         if (response.data && response.data.user) {
           setCurrentUser(response.data.user);
         }
@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await axios.post('http://localhost:3000/api/auth/login', {
+      const response = await axios.post('http://47.110.133.191:3000/api/auth/login', {
         email, password
       });
       
@@ -71,7 +71,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (name, email, password) => {
     try {
-      const response = await axios.post('http://localhost:3000/api/auth/register', {
+      const response = await axios.post('http://47.110.133.191:3000/api/auth/register', {
         name, email, password
       });
       
