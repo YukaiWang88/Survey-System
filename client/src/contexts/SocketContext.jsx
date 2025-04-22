@@ -8,7 +8,7 @@ export const SocketProvider = ({ children }) => {
 
   useEffect(() => {
     // Connect to socket server - use the same URL as the API
-    const SOCKET_URL = 'http://localhost:3000';
+    const SOCKET_URL = 'http://47.110.133.191:3000';
     const newSocket = io(SOCKET_URL);
     setSocket(newSocket);
     
