@@ -49,7 +49,7 @@ router.post('/', async (req, res) => {
           throw new Error(`Question ${index + 1} is missing required text field`);
         }
       }
-      if (!question.result) {
+      if (!question.results) {
         switch (question.type) {
               case 'mc':
                 results = new Map(
@@ -72,15 +72,17 @@ router.post('/', async (req, res) => {
                 );
                 question.results = results;
                 break;
-
-              case 'quiz':
+              case 'quiz-mc':
+                console.log("options: ", question.options);
                 results = new Map(
                   question.options.map(option => [option.text, 0])
                 );
                 question.results = results;
                 break;
               case 'instruction':
-                question.results = new Map();
+                results = new Map();
+                question.results = results;
+                break;
               default:
                 return;
             }
@@ -176,21 +178,36 @@ router.put('/:id', async (req, res) => {
     const { id } = req.params;
 
     console.log("update: ", req.body);
-    
-    // Find and update survey in MongoDB
-    const updatedSurvey = await Survey.findOneAndUpdate(
-      { _id: id, creator: req.user._id },
-      { ...req.body, updatedAt: Date.now() },
-      { new: true }
-    );
-    
-    // if (!updatedSurvey) {
-    //   return res.status(404).json({ message: 'Survey not found' });
-    // }
 
-    // Validate and fix questions data
-    let questions = updatedSurvey.questions;
+    // process request body
 
+    let questions = req.body.questions;
+
+    function syncResultsWithOptions(question) {
+      const currentOptionTexts = new Set(question.options.map(opt => opt.text));
+    
+      // console.log(question.results);
+      let results = new Map(Object.entries(question.results));
+      // console.log(results);
+
+      // Remove keys not in options
+      for (const key of results.keys()) {
+        if (!currentOptionTexts.has(key)) {
+          results.delete(key);
+        }
+      }
+    
+      // Add missing keys with default value 0
+      for (const option of question.options) {
+        if (!results.has(option.text)) {
+          results.set(option.text, 0);
+        }
+      }
+      console.log("results: ", results);
+      return results;
+    }    
+
+    
     const validatedQuestions = questions.map((question, index) => {
       // If there's a title or questionText but no text, use one of those
       if (!question.text) {
@@ -202,7 +219,7 @@ router.put('/:id', async (req, res) => {
           throw new Error(`Question ${index + 1} is missing required text field`);
         }
       }
-      if (!question.result) {
+      if (!question.results) {
         switch (question.type) {
               case 'mc':
                 results = new Map(
@@ -226,7 +243,7 @@ router.put('/:id', async (req, res) => {
                 question.results = results;
                 break;
 
-              case 'quiz':
+              case 'quiz-mc':
                 results = new Map(
                   question.options.map(option => [option.text, 0])
                 );
@@ -237,18 +254,26 @@ router.put('/:id', async (req, res) => {
               default:
                 return;
             }
+      } else {
+        question.results = syncResultsWithOptions(question)
       }
       
       return question;
     });
 
+    req.body.questions = validatedQuestions;
 
-        
-
+    // Find and update survey in MongoDB
+    const updatedSurvey = await Survey.findOneAndUpdate(
+      { _id: id, creator: req.user._id },
+      { ...req.body, updatedAt: Date.now() },
+      { new: true }
+    );
+    
     
     res.json({ 
       message: 'Survey updated successfully',
-      survey: updatedSurvey 
+      survey: updatedSurvey
     });
   } catch (err) {
     console.error('Update survey error:', err);

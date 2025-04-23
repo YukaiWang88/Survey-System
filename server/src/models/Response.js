@@ -42,4 +42,7 @@ const ResponseSchema = new mongoose.Schema({
   completedAt: Date
 });
 
-module.exports = mongoose.model('Response', ResponseSchema);
+
+const Response = mongoose.model('Response', ResponseSchema);
+
+module.exports = Response;

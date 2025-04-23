@@ -29,8 +29,55 @@ const PresentSurvey = () => {
   const [surveyCode, setSurveyCode] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const [currentResponses, setCurrentResponses] = useState({});
+
+  //
+  // useEffect(() => {
+
+  
+  //   return () => clearInterval(intervalId);
+  // }, []);
+
+  useEffect(() => {
+    if (!survey) return; // Don't start interval until we have survey data
+  
+    let isMounted = true; // Flag to track component mount status
+  
+    const getData= async () => {
+      try {
+        if (currentQuestionIndex !== null) {
+          const response = await API.get(`/present/${survey._id}/${survey.questions[currentQuestionIndex]._id}`);
+          if (isMounted) {
+            console.log("currentResponses", response.data);
+            setCurrentResponses(response.data);
+            // Update your state with the response data here
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching survey:", error);
+      }
+      
+      // Wait 2 seconds before the next fetch
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      if (isMounted) {
+        getData(); // Recursively call fetchData
+      }
+    };
+  
+    getData(); // Initial call
+  
+    return () => {
+      isMounted = false; // Cleanup function to prevent state updates after unmount
+    };
+  }, [survey, currentQuestionIndex]);
+
+
+  
   
   useEffect(() => {
+    
     if (!currentUser) {
       navigate('/login');
       return;
@@ -232,11 +279,13 @@ const PresentSurvey = () => {
   const currentQuestion = survey.questions[currentQuestionIndex];
   console.log("current question: ", currentQuestion);
 
-  //
+  // const questionId = currentQuestion._id;
+  // console.log("current id: ", questionId);
+
+
+  console.log(currentResponses);
  
-  // console.log(totalParticipants);
-  const currentResponses = responses[currentQuestionIndex] || [];
-  console.log("current response: ", currentResponses);
+
   const responseRate = participants.length > 0 
     ? Math.round((currentResponses.length / participants.length) * 100)
     : 0;
@@ -254,7 +303,7 @@ const PresentSurvey = () => {
         </div>
         
         <div className="participant-count">
-          <span>{participants.length}</span> Participants
+          <span>{Object.values(currentResponses).reduce((acc, val) => acc + val, 0)}</span> Participants 
         </div>
       </div>
       
@@ -282,16 +331,14 @@ const PresentSurvey = () => {
             </button>
           </div>
           
-          <div className="question-display">
+          <div className="question-display" style={{ display: showingQuestion ? 'block' : 'none' }}>
             <h2>{currentQuestion.title}</h2>
           </div>
           
-          {/* <div className="results-container">
+          <div className="results-container">
             {currentQuestion.type === 'mc' && (
               <MCResults 
-                question={currentQuestion}
                 responses={currentResponses}
-                totalParticipants={participants.length}
               />
             )}
             
@@ -299,7 +346,6 @@ const PresentSurvey = () => {
               <QuizResults 
                 question={currentQuestion}
                 responses={currentResponses}
-                totalParticipants={participants.length}
                 showAnswer={showingAnswer}
               />
             )}
@@ -312,9 +358,11 @@ const PresentSurvey = () => {
             
             {currentQuestion.type === 'scale' && (
               <ScaleResults 
-                question={currentQuestion}
+                // question={currentQuestion}
+                minLabel={currentQuestion.minLabel}
+                maxLabel={currentQuestion.maxLabel}
                 responses={currentResponses}
-                totalParticipants={participants.length}
+                // totalParticipants={participants.length}
               />
             )}
             
@@ -323,11 +371,11 @@ const PresentSurvey = () => {
                 <p>{currentQuestion.content || 'This is an instruction slide. No responses needed.'}</p>
               </div>
             )}
-          </div> */}
+          </div>
         </div>
         
         <div className="presentation-sidebar">
-          <div className="response-metrics">
+          {/* <div className="response-metrics">
             <div className="metric">
               <span className="metric-label">Response Rate</span>
               <span className="metric-value">{responseRate}%</span>
@@ -336,7 +384,7 @@ const PresentSurvey = () => {
               <span className="metric-label">Responses</span>
               <span className="metric-value">{currentResponses.length}/{participants.length}</span>
             </div>
-          </div>
+          </div> */}
           
           <div className="presentation-controls">
             <button 
