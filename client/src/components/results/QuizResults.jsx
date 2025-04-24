@@ -1,9 +1,15 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList, Cell, PieChart, Pie, Legend } from 'recharts';
 
-const QuizResults = ({ question, responses, showAnswer}) => {
+const QuizResults = ({ question, responses, showAnswer, participants}) => {
   if (!responses || !question ) return null;
   // responses = {"A": 7, "B": 3};
+
+  if (participants == 0) {
+    return (<div  style={{textAlign: "center", color: "#cc3333"}} /* soft red */>
+      no answers yet
+    </div>)
+  }
 
   const correctOptionText = question.options.find(option => option.isCorrect)?.text;
 

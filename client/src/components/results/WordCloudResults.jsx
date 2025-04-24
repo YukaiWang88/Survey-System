@@ -4,8 +4,14 @@ import WordCloud from "react-wordcloud";
 // import React from "react";
 // import WordCloud from "react-wordcloud";
 
-const WordCloudResultsComponent = ({ responses }) => {
+const WordCloudResultsComponent = ({ responses , participants}) => {
   if (!responses ) return null;
+
+  if (participants == 0) {
+    return (<div  style={{textAlign: "center", color: "#cc3333"}} /* soft red */>
+      no answers yet
+    </div>)
+  }
 
   const words = Object.entries(responses).map(([word, freq]) => ({
     text: word,

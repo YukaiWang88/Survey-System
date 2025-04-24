@@ -1,8 +1,14 @@
 import React, { useState } from 'react';
 
-const ParticipantMC = ({ question, answer, onAnswerChange }) => {
+const ParticipantMC = ({ question, answer, onAnswerChange, participants}) => {
 
   const [selected, setSelected] = useState(null); 
+
+  if (participants == 0) {
+    return (<div  style={{textAlign: "center", color: "#cc3333"}} /* soft red */>
+      no answers yet
+    </div>)
+  }
   
   // Function to handle option selection
   const handleOptionSelect = (option) => {

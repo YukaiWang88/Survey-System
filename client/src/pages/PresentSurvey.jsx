@@ -23,7 +23,7 @@ const PresentSurvey = () => {
   const [survey, setSurvey] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [responses, setResponses] = useState({});
-  const [participants, setParticipants] = useState([]);
+  const [participants, setParticipants] = useState(0);
   const [showingQuestion, setShowingQuestion] = useState(true);
   const [showingAnswer, setShowingAnswer] = useState(false);
   const [surveyCode, setSurveyCode] = useState('');
@@ -50,7 +50,8 @@ const PresentSurvey = () => {
           const response = await API.get(`/present/${survey._id}/${survey.questions[currentQuestionIndex]._id}`);
           if (isMounted) {
             console.log("currentResponses", response.data);
-            setCurrentResponses(response.data);
+            setCurrentResponses(response.data.answer);
+            setParticipants(response.data.num)
             // Update your state with the response data here
           }
         }
@@ -302,8 +303,8 @@ const PresentSurvey = () => {
           </div>
         </div>
         
-        <div className="participant-count" style={{ display: currentQuestion.type == "introduction" ? 'block' : 'none' }}>
-          <span>{Object.values(currentResponses).reduce((acc, val) => acc + val, 0)}</span> Participants 
+        <div className="participant-count" style={{ display: (currentQuestion.type != "instruction") ? 'block' : 'none' }}>
+          <span>{participants}</span> Participants 
         </div>
       </div>
       
@@ -339,6 +340,7 @@ const PresentSurvey = () => {
             {currentQuestion.type === 'mc' && (
               <MCResults 
                 responses={currentResponses}
+                participants={participants}
               />
             )}
             
@@ -347,12 +349,14 @@ const PresentSurvey = () => {
                 question={currentQuestion}
                 responses={currentResponses}
                 showAnswer={showingAnswer}
+                participants={participants}
               />
             )}
             
             {currentQuestion.type === 'wordcloud' && (
               <WordCloudResults 
                 responses={currentResponses}
+                participants={participants}
               />
             )}
             
@@ -362,6 +366,7 @@ const PresentSurvey = () => {
                 minLabel={currentQuestion.minLabel}
                 maxLabel={currentQuestion.maxLabel}
                 responses={currentResponses}
+                participants={participants}
                 // totalParticipants={participants.length}
               />
             )}

@@ -1,9 +1,14 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList, Cell } from 'recharts';
 
-const MCResults = ({ responses }) => {
+const MCResults = ({ responses, participants}) => {
   if (!responses ) return null;
   // responses = {"A": 7, "B": 3};
+  if (participants == 0) {
+    return (<div  style={{textAlign: "center", color: "#cc3333"}} /* soft red */>
+      no answers yet
+    </div>)
+  }
 
   const data = Object.entries(responses).map(([key, value]) => {
 

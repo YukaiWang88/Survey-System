@@ -1,10 +1,16 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList, Cell } from 'recharts';
 
-const ScaleResults = ({ minLabel, maxLabel, responses }) => {
+const ScaleResults = ({ minLabel, maxLabel, responses, participants }) => {
   console.log(minLabel, maxLabel);
   if (!responses ) return null;
   // responses = {"A": 7, "B": 3};
+
+  if (participants == 0) {
+    return (<div  style={{textAlign: "center", color: "#cc3333"}} /* soft red */>
+      no answers yet
+    </div>)
+  }
 
   const entries = Object.entries(responses).reverse();
 

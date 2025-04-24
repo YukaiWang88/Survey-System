@@ -118,7 +118,7 @@ const ParticipantView = () => {
 
     
     if (answers[currentQuestionIndex].results.hasOwnProperty(answer)) {
-      answers[currentQuestionIndex].results[answer] += 1;
+      answers[currentQuestionIndex].results[answer] = 1;
     } else {
       if (survey.questions[currentQuestionIndex].type != 'wordcloud' && survey.questions[currentQuestionIndex].type != 'word-cloud') {
         throw new Error(`Invalid answer: key "${answer}" not found in results.`);
