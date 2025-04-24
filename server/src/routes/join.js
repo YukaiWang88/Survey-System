@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Survey = require('../models/Survey');
+const { ObjectId } = require('mongodb');
 
 // Join a survey by code
 router.post('/', async (req, res) => {
@@ -27,8 +28,9 @@ router.post('/', async (req, res) => {
     }
     
     // randomly create a user id
-    const participantId = `participant-${Date.now()}`;
-    
+    // const participantId = `participant-${Date.now()}`;
+    const participantId = new ObjectId();
+
     let surveyId = survey._id;
 
     res.json({

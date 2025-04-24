@@ -1,11 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 const ParticipantMC = ({ question, answer, onAnswerChange }) => {
+
+  const [selected, setSelected] = useState(null); 
+  
   // Function to handle option selection
-  const handleOptionSelect = (optionId) => {
-    console.log("Selected option:", optionId);
-    onAnswerChange(optionId);
+  const handleOptionSelect = (option) => {
+    console.log("Selected option:", option);
+    setSelected(option);
+    onAnswerChange(option);
   };
+
+   
 
   // If question has no options, show a message
   if (!question.options || question.options.length === 0) {
@@ -25,18 +31,18 @@ const ParticipantMC = ({ question, answer, onAnswerChange }) => {
         {question.options.map((option, index) => {
           // For debugging
           console.log("Option:", option);
-          console.log("Checking if", answer, "===", option.id || index);
+          console.log("Checking if", answer, "===", option.text);
           
           return (
-            <div key={index} className="mc-option">
+            <div key={option.text} className="mc-option">
               <div className="form-check option-item">
                 <input
                   className="form-check-input"
                   type="radio"
                   id={`option-${question.id || 'q'}-${index}`}
                   name={`question-${question.id || 'q'}`}
-                  checked={answer === (option.id || index.toString())}
-                  onChange={() => handleOptionSelect(option.id || index.toString())}
+                  checked={selected === (option.text)}
+                  onChange={() => handleOptionSelect(option.text)}
                 />
                 <label 
                   className="form-check-label" 

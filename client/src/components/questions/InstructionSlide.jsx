@@ -4,32 +4,25 @@ export const InstructionSlide = ({
     onChange, 
     index 
   }) => {
+    // console.log("Instruction: ", question.title);
     return (
-      <div className="question-item instruction">
+      <div style={{ width: '50%', height: 300 }} className="question-item instruction" >
         <div className="question-header">
           <span className="question-type-label">Instruction</span>
-          <div className="question-actions">
+          {/* <div className="question-actions">
             <button type="button" className="action-btn" onClick={() => onChange('moveUp', index)}>↑</button>
             <button type="button" className="action-btn" onClick={() => onChange('moveDown', index)}>↓</button>
             <button type="button" className="action-btn delete" onClick={() => onChange('delete', index)}>×</button>
-          </div>
+          </div> */}
         </div>
         
-        <input
-          type="text"
-          className="question-title-input"
-          value={question.title || ''}
-          onChange={(e) => onChange('title', index, e.target.value)}
-          placeholder="Enter title"
-        />
-        
-        <textarea
-          className="instruction-content"
-          value={question.content || ''}
-          onChange={(e) => onChange('content', index, e.target.value)}
-          placeholder="Enter instruction content"
-          rows="5"
-        />
+        <div style={{ fontSize: '30px', }}>
+          {question.title || 'Title'}
+        </div>
+        <br></br>
+        <div>
+          {question.content || 'Content'}
+        </div>
       </div>
     );
   };

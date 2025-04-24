@@ -41,6 +41,29 @@ const ParticipantView = () => {
       try {
         const response = await API.get(`/surveys/code/${surveyId}`);
         setSurvey(response.data);
+
+        // console.log(response);
+
+        // answer list
+        const answerList = response.data.questions.map(({ _id, type, results }) => ({
+          _id,
+          type,
+          results,
+          answered: false
+        }));
+      
+      
+        const objectAnswerList = answerList.map(item => ({
+          ...item,
+          results: item.results instanceof Map
+            ? Object.fromEntries(item.results)
+            : item.results
+        }));
+
+        setAnswers(objectAnswerList);
+        
+        // console.log(JSON.stringify(printableAnswerList, null, 2));
+        
       } catch (err) {
         setError('Survey not found or has expired');
       } finally {
@@ -49,77 +72,90 @@ const ParticipantView = () => {
     };
     
     fetchSurvey();
-    
-    // parse_survey_ ge
+
+    // parse_survey_ge
 
     // Socket connection
-    if (socket) {
-      socket.emit('join-survey', { surveyId, participantId, nickname });
+    // if (socket) {
+    //   socket.emit('join-survey', { surveyId, participantId, nickname });
       
-      socket.on('question-change', (data) => {
-        setCurrentQuestionIndex(data.questionIndex);
-        setShowAnswer(false);
-        setFeedback(null);
-      });
+    //   socket.on('question-change', (data) => {
+    //     setCurrentQuestionIndex(data.questionIndex);
+    //     setShowAnswer(false);
+    //     setFeedback(null);
+    //   });
       
-      socket.on('show-answer', (data) => {
-        setShowAnswer(true);
-      });
+    //   socket.on('show-answer', (data) => {
+    //     setShowAnswer(true);
+    //   });
       
-      socket.on('hide-answer', () => {
-        setShowAnswer(false);
-      });
+    //   socket.on('hide-answer', () => {
+    //     setShowAnswer(false);
+    //   });
       
-      socket.on('survey-end', () => {
-        navigate('/survey/complete', { 
-          state: { surveyTitle: survey?.title } 
-        });
-      });
+    //   socket.on('survey-end', () => {
+    //     navigate('/survey/complete', { 
+    //       state: { surveyTitle: survey?.title } 
+    //     });
+    //   });
       
-      return () => {
-        socket.off('question-change');
-        socket.off('show-answer');
-        socket.off('hide-answer');
-        socket.off('survey-end');
-      };
-    }
+    //   return () => {
+    //     socket.off('question-change');
+    //     socket.off('show-answer');
+    //     socket.off('hide-answer');
+    //     socket.off('survey-end');
+    //   };
+    // }
   }, [surveyId, socket, participantId, nickname, navigate, survey?.title]);
+
+
 
   const handleAnswerChange = (answer) => {
     if (!survey) return;
     
     const question = survey.questions[currentQuestionIndex];
-    const questionId = question.id;
+    // const questionId = question.id;
+
     
-    const updatedAnswers = {
-      ...answers,
-      [questionId]: answer
-    };
-    
-    setAnswers(updatedAnswers);
-    setFeedback(null);
-    
-    if (socket && participantId) {
-      socket.emit('submit-answer', {
-        surveyId,
-        questionId,
-        answer,
-        participantId
-      });
+    if (answers[currentQuestionIndex].results.hasOwnProperty(answer)) {
+      answers[currentQuestionIndex].results[answer] += 1;
+    } else {
+      if (survey.questions[currentQuestionIndex].type != 'wordcloud' && survey.questions[currentQuestionIndex].type != 'word-cloud') {
+        throw new Error(`Invalid answer: key "${answer}" not found in results.`);
+      } else {
+        answers[currentQuestionIndex].results[answer] = 1;
+      }
+      
     }
+
+    answers[currentQuestionIndex].answered = true;
+
+    setAnswers(answers);
+
+    console.log("set answer:", answers);
+    // setFeedback(null);
+    
+    // if (socket && participantId) {
+    //   socket.emit('submit-answer', {
+    //     surveyId,
+    //     questionId,
+    //     answer,
+    //     participantId
+    //   });
+    // }
     
     // If it's a quiz question, check if answer is correct
-    if (question.type === 'quiz-mc' && showAnswer) {
-      const selectedOption = question.options.find(o => o.id === answer);
-      if (selectedOption) {
-        setFeedback({
-          isCorrect: selectedOption.isCorrect,
-          explanation: selectedOption.isCorrect 
-            ? (question.explanation || 'Correct!') 
-            : (question.explanation || 'That was not the correct answer.')
-        });
-      }
-    }
+    // if (question.type === 'quiz-mc' && showAnswer) {
+    //   const selectedOption = question.options.find(o => o.id === answer);
+    //   if (selectedOption) {
+    //     setFeedback({
+    //       isCorrect: selectedOption.isCorrect,
+    //       explanation: selectedOption.isCorrect 
+    //         ? (question.explanation || 'Correct!') 
+    //         : (question.explanation || 'That was not the correct answer.')
+    //     });
+    //   }
+    // }
   };
 
   const handleNext = () => {
@@ -129,18 +165,36 @@ const ParticipantView = () => {
       setFeedback(null);
       
       // Notify server about navigation
-      if (socket && participantId) {
-        socket.emit('participant-next', {
-          surveyId,
-          participantId
-        });
-      }
+      // if (socket && participantId) {
+      //   socket.emit('participant-next', {
+      //     surveyId,
+      //     participantId
+      //   });
+      // }
     } else {
       // End of survey
-      navigate('/survey/complete', { 
-        state: { surveyTitle: survey?.title } 
-      });
+      try {
+        const payload = {
+          surveyId,       // Assuming surveyId is already defined
+          answers,        // Your list of answers
+          participantId,         // Any other variable you need to send
+          // timestamp: new Date().toISOString(), // Example of extra metadata
+        };
+    
+        API.post(`/answer`, payload);
+    
+        // Optionally, you could set response data or confirm submission
+        // setSurvey(response.data);
+    
+        navigate('/survey/complete', {
+          state: { surveyTitle: survey?.title }
+        });
+      } catch (error) {
+        console.error('Failed to submit survey results:', error);
+        // Handle error (e.g., show message to user)
+      }
     }
+
   };
 
   const isQuizQuestion = (question) => {
@@ -148,17 +202,18 @@ const ParticipantView = () => {
   };
 
   const isAnswerSelected = () => {
-    if (!survey) return false;
+    // if (!survey) return false;
     
-    const question = survey.questions[currentQuestionIndex];
-    const questionId = question.id;
-    const answer = answers[questionId];
+    // const question = survey.questions[currentQuestionIndex];
+    // const questionId = question.id;
+    // const answer = answers[questionId];
     
-    if (question.type === 'multiple-choice' && question.allowMultiple) {
-      return Array.isArray(answer) && answer.length > 0;
-    }
+    // if (question.type === 'multiple-choice' && question.allowMultiple) {
+    //   return Array.isArray(answer) && answer.length > 0;
+    // }
     
-    return answer !== undefined && answer !== '';
+    // return answer !== undefined && answer !== '';
+    return  true;
   };
 
   // New function to render the right component based on question type
@@ -168,7 +223,29 @@ const ParticipantView = () => {
     }
     
     const currentQuestion = survey.questions[currentQuestionIndex];
-    const currentAnswer = answers[currentQuestion.id] || '';
+
+    const currentResult = answers[currentQuestionIndex].results;
+
+    console.log(`currentResult: ${JSON.stringify(currentResult, null, 2)}`);
+
+    let currentAnswer='';
+
+    for (const [key, value] of Object.entries(currentResult)) {
+      if (value === 1) {
+        currentAnswer = key;  // Output: "b"
+        break;             // Stop after the first match
+      }
+    }
+
+    console.log(`currentAnswer ${currentAnswer}`)
+
+    // if (answers[currentQuestionIndex].results.hasOwnProperty(answer)) {
+    //   answers[currentQuestionIndex].results[answer] += 1;
+    // } else {
+    //   throw new Error(`Invalid answer: key "${answer}" not found in results.`);
+    // }
+
+    
     
     console.log('Rendering question type:', currentQuestion.type);
     
@@ -196,20 +273,28 @@ const ParticipantView = () => {
       case 'instruction':
         return (
           <InstructionSlide
-            content={currentQuestion}
-            onContinue={handleNext}
+            question={currentQuestion}
+            // onContinue={handleNext}
           />
         );
         
       case 'scale':
+        // return (
+        //   <ScaleQuestion
+        //     question={currentQuestion}
+        //     answer={currentAnswer}
+        //     onAnswerChange={handleAnswerChange}
+        //     showResults={false}
+        //   />
+        // );
+
         return (
           <ScaleQuestion
             question={currentQuestion}
-            answer={currentAnswer}
-            onAnswerChange={handleAnswerChange}
-            showResults={false}
+            currentAnswer={currentAnswer}
+            onChange={handleAnswerChange}
           />
-        );
+        )
         
       case 'quiz-mc':
         return (
@@ -217,8 +302,8 @@ const ParticipantView = () => {
             question={currentQuestion}
             answer={currentAnswer}
             onAnswerChange={handleAnswerChange}
-            showAnswer={showAnswer}
-            feedback={feedback}
+            // showAnswer={showAnswer}
+            // feedback={feedback}
           />
         );
         
@@ -255,7 +340,8 @@ const ParticipantView = () => {
           <div className="question-progress">{progress}</div>
         )}
       </div>
-      
+
+
       {/* Use the renderQuestion function here instead of conditionals */}
       {renderQuestion()}
       

@@ -1,29 +1,29 @@
-import React from 'react';
+import React, { useState } from 'react';
+
+
 export const QuizQuestion = ({ 
     question = {}, 
-    onChange, 
-    index 
+    answer,
+    onAnswerChange, 
   }) => {
+
+    const [selected, setSelected] = useState(null); 
+
+    // Function to handle option selection
+    const handleOptionSelect = (option) => {
+      console.log("Selected option:", option);
+      setSelected(option);
+      onAnswerChange(option);
+    };
+
     return (
-      <div className="question-item quiz">
-        <div className="question-header">
-          <span className="question-type-label">Quiz</span>
-          <div className="question-actions">
-            <button type="button" className="action-btn" onClick={() => onChange('moveUp', index)}>↑</button>
-            <button type="button" className="action-btn" onClick={() => onChange('moveDown', index)}>↓</button>
-            <button type="button" className="action-btn delete" onClick={() => onChange('delete', index)}>×</button>
-          </div>
+      <div className="question-item quiz" style={{ width: '50%', margin: 20}}>
+ 
+        <div>
+          <h2>{question.title}</h2>
         </div>
-        
-        <input
-          type="text"
-          className="question-title-input"
-          value={question.title || ''}
-          onChange={(e) => onChange('title', index, e.target.value)}
-          placeholder="Enter question"
-        />
-        
-        <div className="options-list">
+            
+        {/* <div className="options-list">
           {(question.options || []).map((option, optIndex) => (
             <div className="option-item" key={optIndex}>
               <input
@@ -57,7 +57,36 @@ export const QuizQuestion = ({
           >
             + Add Option
           </button>
-        </div>
+        </div> */}
+
+      <div className="mc-options">
+        {question.options.map((option, index) => {
+          // For debugging
+          console.log("Option:", option);
+          console.log("Checking if", answer, "===", option.text);
+          
+          return (
+            <div key={option.text} className="mc-option">
+              <div className="form-check option-item">
+                <input
+                  className="form-check-input"
+                  type="radio"
+                  id={`option-${question.id || 'q'}-${index}`}
+                  name={`question-${question.id || 'q'}`}
+                  checked={selected === (option.text)}
+                  onChange={() => handleOptionSelect(option.text)}
+                />
+                <label 
+                  className="form-check-label" 
+                  htmlFor={`option-${question.id || 'q'}-${index}`}
+                >
+                  {option.text}
+                </label>
+              </div>
+            </div>
+          );
+        })}
+      </div>
       </div>
     );
   };

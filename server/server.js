@@ -39,7 +39,10 @@ app.use('/api/auth', require('./src/routes/auth'));
 app.use('/api/surveys', require('./src/routes/surveyRoutes'));
 app.use('/api/join', require('./src/routes/join'));
 app.use('/api/present', require('./src/routes/present'));
+app.use('/api/answer', require('./src/routes/answer'));
 
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+
