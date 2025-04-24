@@ -65,6 +65,7 @@ const SurveyCard = ({ survey, onPresent, onEdit, onDelete, onActivate, onDeactiv
             className="btn-edit"
             onClick={onEdit}
             aria-label="Edit survey"
+            disabled={survey.isLocked}
           >
             <FaEdit style={{ marginRight: '4px' }} /> Edit
           </button>

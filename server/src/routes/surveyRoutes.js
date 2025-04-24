@@ -49,44 +49,42 @@ router.post('/', async (req, res) => {
           throw new Error(`Question ${index + 1} is missing required text field`);
         }
       }
-      if (!question.results) {
-        switch (question.type) {
-              case 'mc':
-                results = new Map(
-                  question.options.map(option => [option.text, 0])
-                );
-                question.results = results;
-                break;
-              case 'wordcloud':
-                results = new Map();
-                question.results = results;
-                break;
-              case 'scale':
-                start = question.minValue;
-                end = question.maxValue;
-                results = new Map(
-                  Array.from({ length: end - start + 1 }, (_, i) => [
-                    String(start + i), // Key as string (e.g., '1', '2')
-                    0,                // Default value
-                  ])
-                );
-                question.results = results;
-                break;
-              case 'quiz-mc':
-                console.log("options: ", question.options);
-                results = new Map(
-                  question.options.map(option => [option.text, 0])
-                );
-                question.results = results;
-                break;
-              case 'instruction':
-                results = new Map();
-                question.results = results;
-                break;
-              default:
-                return;
-            }
-      }
+      switch (question.type) {
+            case 'mc':
+              results = new Map(
+                question.options.map(option => [option.text, 0])
+              );
+              question.results = results;
+              break;
+            case 'wordcloud':
+              results = new Map();
+              question.results = results;
+              break;
+            case 'scale':
+              start = Number(question.minValue);
+              end = Number(question.maxValue);
+              results = new Map(
+                Array.from({ length: end - start + 1 }, (_, i) => [
+                  String(start + i), // Key as string (e.g., '1', '2')
+                  0,                // Default value
+                ])
+              );
+              question.results = results;
+              break;
+            case 'quiz-mc':
+              console.log("options: ", question.options);
+              results = new Map(
+                question.options.map(option => [option.text, 0])
+              );
+              question.results = results;
+              break;
+            case 'instruction':
+              results = new Map();
+              question.results = results;
+              break;
+            default:
+              return;
+          }
       
       return question;
     });
@@ -219,44 +217,40 @@ router.put('/:id', async (req, res) => {
           throw new Error(`Question ${index + 1} is missing required text field`);
         }
       }
-      if (!question.results) {
-        switch (question.type) {
-              case 'mc':
-                results = new Map(
-                  question.options.map(option => [option.text, 0])
-                );
-                question.results = results;
-                break;
-              case 'wordcloud':
-                results = new Map();
-                question.results = results;
-                break;
-              case 'scale':
-                start = question.minValue;
-                end = question.maxValue;
-                results = new Map(
-                  Array.from({ length: end - start + 1 }, (_, i) => [
-                    String(start + i), // Key as string (e.g., '1', '2')
-                    0,                // Default value
-                  ])
-                );
-                question.results = results;
-                break;
+      switch (question.type) {
+            case 'mc':
+              results = new Map(
+                question.options.map(option => [option.text, 0])
+              );
+              question.results = results;
+              break;
+            case 'wordcloud':
+              results = new Map();
+              question.results = results;
+              break;
+            case 'scale':
+              start = Number(question.minValue);
+              end = Number(question.maxValue);
+              results = new Map(
+                Array.from({ length: end - start + 1 }, (_, i) => [
+                  String(start + i), // Key as string (e.g., '1', '2')
+                  0,                // Default value
+                ])
+              );
+              question.results = results;
+              break;
 
-              case 'quiz-mc':
-                results = new Map(
-                  question.options.map(option => [option.text, 0])
-                );
-                question.results = results;
-                break;
-              case 'instruction':
-                question.results = new Map();
-              default:
-                return;
-            }
-      } else {
-        question.results = syncResultsWithOptions(question)
-      }
+            case 'quiz-mc':
+              results = new Map(
+                question.options.map(option => [option.text, 0])
+              );
+              question.results = results;
+              break;
+            case 'instruction':
+              question.results = new Map();
+            default:
+              return;
+          }
       
       return question;
     });
