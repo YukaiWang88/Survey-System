@@ -1,4 +1,5 @@
 import React from 'react';
+import GoogleAnalytics from './components/GoogleAnalytics';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { SocketProvider } from './contexts/SocketContext';
@@ -24,6 +25,8 @@ function App() {
     <Router>
       <AuthProvider>
         <SocketProvider>
+          <GoogleAnalytics />
+          {/* Global styles and components */}
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<Login />} />

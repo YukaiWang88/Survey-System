@@ -5,6 +5,11 @@
 .env.test
 .env.production
 
+.env.development.local
+.env.test.local
+.env.production.local
+.env.production
+
 # Dependencies
 node_modules/
 /client/node_modules/
