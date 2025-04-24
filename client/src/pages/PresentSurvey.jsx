@@ -286,9 +286,9 @@ const PresentSurvey = () => {
   console.log(currentResponses);
  
 
-  const responseRate = participants.length > 0 
-    ? Math.round((currentResponses.length / participants.length) * 100)
-    : 0;
+  // const responseRate = participants.length > 0 
+  //   ? Math.round((currentResponses.length / participants.length) * 100)
+  //   : 0;
   
   return (
     <div className="present-survey-container">
@@ -302,7 +302,7 @@ const PresentSurvey = () => {
           </div>
         </div>
         
-        <div className="participant-count">
+        <div className="participant-count" style={{ display: currentQuestion.type == "introduction" ? 'block' : 'none' }}>
           <span>{Object.values(currentResponses).reduce((acc, val) => acc + val, 0)}</span> Participants 
         </div>
       </div>
