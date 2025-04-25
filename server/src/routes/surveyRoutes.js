@@ -181,32 +181,33 @@ router.put('/:id', async (req, res) => {
 
     let questions = req.body.questions;
 
-    function syncResultsWithOptions(question) {
-      const currentOptionTexts = new Set(question.options.map(opt => opt.text));
+    // function syncResultsWithOptions(question) {
+    //   const currentOptionTexts = new Set(question.options.map(opt => opt.text));
     
-      // console.log(question.results);
-      let results = new Map(Object.entries(question.results));
-      // console.log(results);
+    //   // console.log(question.results);
+    //   let results = new Map(Object.entries(question.results));
+    //   // console.log(results);
 
-      // Remove keys not in options
-      for (const key of results.keys()) {
-        if (!currentOptionTexts.has(key)) {
-          results.delete(key);
-        }
-      }
+    //   // Remove keys not in options
+    //   for (const key of results.keys()) {
+    //     if (!currentOptionTexts.has(key)) {
+    //       results.delete(key);
+    //     }
+    //   }
     
-      // Add missing keys with default value 0
-      for (const option of question.options) {
-        if (!results.has(option.text)) {
-          results.set(option.text, 0);
-        }
-      }
-      console.log("results: ", results);
-      return results;
-    }    
+    //   // Add missing keys with default value 0
+    //   for (const option of question.options) {
+    //     if (!results.has(option.text)) {
+    //       results.set(option.text, 0);
+    //     }
+    //   }
+    //   console.log("results: ", results);
+    //   return results;
+    // }    
 
     
     const validatedQuestions = questions.map((question, index) => {
+      console.log(`question 1 ${JSON.stringify(question)}`)
       // If there's a title or questionText but no text, use one of those
       if (!question.text) {
         if (question.questionText) {
@@ -217,6 +218,7 @@ router.put('/:id', async (req, res) => {
           throw new Error(`Question ${index + 1} is missing required text field`);
         }
       }
+      console.log(`question 3 ${JSON.stringify(question)}`)
       switch (question.type) {
             case 'mc':
               results = new Map(
@@ -247,15 +249,20 @@ router.put('/:id', async (req, res) => {
               question.results = results;
               break;
             case 'instruction':
-              question.results = new Map();
+              console.log("here");
+              results = new Map();
+              question.results = results;
+              break;
             default:
               return;
           }
-      
+      console.log(`question 2 ${JSON.stringify(question)}`)
       return question;
     });
 
     req.body.questions = validatedQuestions;
+
+    console.log(`validatedQuestions ${JSON.stringify(validatedQuestions)}`)
 
     // Find and update survey in MongoDB
     const updatedSurvey = await Survey.findOneAndUpdate(
@@ -270,8 +277,13 @@ router.put('/:id', async (req, res) => {
       survey: updatedSurvey
     });
   } catch (err) {
+    
     console.error('Update survey error:', err);
-    res.status(500).json({ message: 'Server error' });
+
+    // If the error has a specific message, return that
+    const message = err && err.message ? err.message : "Server Error";
+  
+    res.status(500).json({ message });
   }
 });
 
